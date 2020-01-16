@@ -1,0 +1,7 @@
+{
+    "main": "app.py",
+    "sites": {
+        "hentai.cafe": "cafe_dl.py",
+        "nhentai.net": "nh_dl.py"
+    }
+}
