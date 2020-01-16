@@ -31,11 +31,11 @@ class Functions:
             img_url = base + "/" + filename
             #removes all folder incompatible characters
             folder_path = re.sub(r"[\\/:*?\"<>|]", "", title)
-
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
 
-            cf_url = scraper.get(img_url).content
+            headers = {"Connection": "Keep-Alive"}
+            cf_url = scraper.get(img_url, headers=headers).content
             with open("{}/{}".format(folder_path, filename), "wb") as f:
                 f.write(cf_url)
                 f.close()
