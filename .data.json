@@ -1,7 +1,8 @@
 {
-    "main": "app.py",
+    "main": ".main.py",
     "sites": {
-        "hentai.cafe": "cafe_dl.py",
-        "nhentai.net": "nh_dl.py"
+        "hentai.cafe": "dl_cafe.py",
+        "nhentai.net": "dl_nh.py",
+        "mangadex.org": "dl_dex.py"
     }
 }

@@ -29,22 +29,23 @@ class Functions:
         for i in range(1, pages+1):
             filename = self.generate_filename(False, i, ext)
             img_url = base + "/" + filename
-            folder_path = re.sub(r"[\\/:*?\"<>|]", " ", title)
+            #removes all folder incompatible characters
+            folder_path = re.sub(r"[\\/:*?\"<>|]", "", title)
 
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
 
-            cfurl = scraper.get(img_url).content
+            cf_url = scraper.get(img_url).content
             with open("{}/{}".format(folder_path, filename), "wb") as f:
-                f.write(cfurl)
+                f.write(cf_url)
+                f.close()
+            scraper.close()
             self.display_download(title, i, pages)
         #end_for_loop
     #end_cf_download
 
-    def run_main(self):
+    def run_main_app(self):
         with open(".data.json") as data_file:
             cmd = "python " + json.load(data_file)["main"]
             os.system(cmd)
     #end_run_main
-
-

@@ -1,4 +1,3 @@
-import cfscrape
 import json
 import os
 

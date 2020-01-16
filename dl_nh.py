@@ -1,37 +1,23 @@
 from bs4 import BeautifulSoup
 import cfscrape
-import json
-import os
-import re
 import sys
 
-from functions import Functions
 from urllib.parse import urlparse
 
-#basic setup
+#local lib
+from functions import Functions
+from template import Template
+
+#setup
 scraper = cfscrape.create_scraper()
 functions = Functions()
-link = ""
-run_main = False
 
-if len(sys.argv) > 1:
-    link = sys.argv[1]
-
-if len(sys.argv) > 2:
-    run_main = sys.argv[2]
-
-def request_link():
-    print("\n")
-    global link
-    if link == "":
-        link = input("Please enter NH URL: ")
-    nh_parse(link)
-#end_request_link
+#TODO include parsing failure on invalid URL entry
 
 #check sort url whether it is the reader or the preview page
-def nh_parse(e):
-    if type(e) == type("str"):
-        url = e.strip()
+def nh_parse(link):
+    if type(link) == type("str"):
+        url = link.strip()
     path = urlparse(url).path
     #if length = 4 => gallery   if length = 5 => reader
     length = len(path.split("/"))
@@ -40,7 +26,6 @@ def nh_parse(e):
 #end_nh_parse
 
 def nh_download(url, is_gallery):
-    global run_main
     if is_gallery:
         #throws to gallery, subject to change
         url += "1"
@@ -60,16 +45,9 @@ def nh_download(url, is_gallery):
 
     functions.cf_download(scraper, title, zero, pages, ext, base)
 
-    if run_main:
-        functions.run_main()
-    else:
-        restart()
+    nh.end(functions.run_main_app, nh.restart_app)
 #end_nh_reader
 
-def restart():
-    global link, run_main
-    link = ""
-    run_main = False
-    request_link()
-
-request_link()
+nh = Template(sys.argv, "Please enter NH URL: ")
+link = nh.request_link()
+nh_parse(link)
