@@ -6,15 +6,16 @@ import sys
 
 class Functions:
     def display_download(self, title, progress, total):
-        download_status = "\rDownloading {}... [{}{}] {}%".format(
-                            title, "=" * progress, " " * (total - progress), math.ceil(progress / total * 100))
+        download_status = "\rDownloading {}... [{}{}] {}% ({}/{})".format(
+                            title, "=" * progress, " " * (total - progress), 
+                            math.ceil(progress / total * 100), progress, total)
         sys.stdout.write(download_status)
         sys.stdout.flush()
     #end init
 
     def has_zero(self, url):
         check = url.rfind(".") - 2
-        return (url[check] == "0")
+        return (str(url[check]) == "0")
     #end_has_zero
 
     def generate_filename(self, zero, page_no, ext):
@@ -27,7 +28,7 @@ class Functions:
 
     def cf_download(self, scraper, title, zero, pages, ext, base):
         for i in range(1, pages+1):
-            filename = self.generate_filename(False, i, ext)
+            filename = self.generate_filename(zero, i, ext)
             img_url = base + "/" + filename
             #removes all folder incompatible characters
             folder_path = re.sub(r"[\\/:*?\"<>|]", "", title)
@@ -42,6 +43,7 @@ class Functions:
             scraper.close()
             self.display_download(title, i, pages)
         #end_for_loop
+        print("\n")
     #end_cf_download
 
     def run_main_app(self):

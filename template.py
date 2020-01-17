@@ -1,5 +1,4 @@
 from functions import Functions
-from urllib.parse import urlparse
 
 class Template:
     def __init__(self, argv, input_str):
@@ -11,8 +10,11 @@ class Template:
             self.link = argv[1]
         if len(argv) > 2:
             self.run_main = argv[2]
+    #end_init
 
-    def set_functions(self, post_request_link):
+    #sets what function to run after re-requesting for URL if script is ran without .main.py. 
+    #should be parsing function
+    def set_post_request(self, post_request_link):
         self.post_request_link = post_request_link
 
     def request_link(self):
@@ -24,7 +26,8 @@ class Template:
     def restart_app(self):
         self.link = ""
         self.run_main = False
-        self.request_link()
+        self.post_request_link(self.request_link())
+    #end_restart_app
 
     #either runs .main.py or requests for URL again depending on arguments on launch
     def end(self, run_main, restart):

@@ -13,7 +13,7 @@ from functions import Functions
 #chapter_id
 api_format = "https://mangadex.org/api/?id={}&type=chapter"
 #hash, filename
-img_format = "https://s5.mangadex.org/data/{}/{}"
+img_format = "https://mangadex.org/data/{}/{}"
 
 functions = Functions()
 
@@ -47,14 +47,14 @@ def dex_preview(url):
     chapter_array = soup.findAll("div", {"class": "chapter-row"})[1:]
     chapter_dict = filter_chapters(chapter_array)
     chapter_no_arr = list(chapter_dict.keys())
-
-    str_dl = "Please indicate which chapters to download ({}-{}) eg. 4-10: "
+    str_dl = "Please indicate which chapters to download ({}-{}) eg. 1-14: "
     u_input = input(str_dl.format(chapter_no_arr[0], chapter_no_arr[-1]))
     dex_parse_input(u_input, chapter_dict)
 #end_dex_preview
 
 def dex_reader(url, path):
-    title = BeautifulSoup(requests.get(url).text, "html.parser").title.string
+    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    title = soup.title.string
     mango_id = path.split("/")[2]
     res = requests.get(api_format.format(mango_id)).json()
     hash = res["hash"]
@@ -73,7 +73,7 @@ def dex_reader(url, path):
             f.write(res.content)
             f.close()
         res.close()
-        functions.display_download(title, i, len(page_array) - 1)
+        functions.display_download(title, i + 1, len(page_array))
     #end_for_loop
     print("\n")
 #end_dex_reader
@@ -95,7 +95,7 @@ def dex_parse_input(u_input, chapter_dict):
         path = chapter_dict[chapters[0]]
         dex_reader("https://mangadex.org" + path, path)
     elif len(chapters) == 2:
-        for i in range(int(chapters[0]), int(chapters[1]) + 1):
+        for i in range(float(chapters[0]), float(chapters[1]) + 1):
             path = chapter_dict[str(i)]
             dex_reader("https://mangadex.org" + path, path)
         #end_for_loop
@@ -104,5 +104,6 @@ def dex_parse_input(u_input, chapter_dict):
 #end_dex_parse_input
 
 dex = Template(sys.argv, "Please enter MangoDex URL: ")
+dex.set_post_request(dex_parse)
 link = dex.request_link()
 dex_parse(link)

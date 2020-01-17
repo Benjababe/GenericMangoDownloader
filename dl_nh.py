@@ -32,7 +32,7 @@ def nh_download(url, is_gallery):
     content = scraper.get(url).content
     soup = BeautifulSoup(content, "html.parser")
     title = soup.title.string
-    title = title[0:title.index("- Page 1 »")].strip()
+    title = title[0:title.index("- Page")].strip()
     pages = int(soup.find("span", {"class": "num-pages"}).text)
     src = soup.find("section", {"id": "image-container"}).find("img")["src"]
 
@@ -49,5 +49,6 @@ def nh_download(url, is_gallery):
 #end_nh_reader
 
 nh = Template(sys.argv, "Please enter NH URL: ")
+nh.set_post_request(nh_parse)
 link = nh.request_link()
 nh_parse(link)

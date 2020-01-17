@@ -57,5 +57,6 @@ def cafe_reader(url):
 #end_cafe_reader
 
 cafe = Template(sys.argv, "Please enter Cafe URL: ")
+cafe.set_post_request(cafe_parse)
 link = cafe.request_link()
 cafe_parse(link)
