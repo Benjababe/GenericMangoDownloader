@@ -1,19 +1,24 @@
 import os
 
-#my local constants
+#my local files
 import constants as const
 
+from dl_cafe import Cafe
+from dl_dex import Dex
+from dl_nh import NH
+
+libs = [Cafe(), Dex(), NH()]
+
+query = "Enter URL of (H-)Mango: "
+
 def parse_url(url, data):
-    sites = data.keys()
-    for site in sites:
-        if (url.__contains__(site)):
-            py_file = data[site]
-            #run command eg. "python dl_cafe.py True {cafe_url}"
-            cmd = "python {} {} True".format(py_file, url)
-            print("Running Command: '{}'". format(cmd))
-            os.system(cmd)
+    for lib in libs:
+        if url.__contains__(lib.SITE):
+            lib.download(url)
+            url = input(query)
+            parse_url(url, const.DATA["sites"])
 #end_parse_url
 
 print("\n")
-url = input("Enter URL of (H-)Mango: ")
+url = input(query)
 parse_url(url, const.DATA["sites"])
