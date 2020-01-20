@@ -1,6 +1,8 @@
-# Don't track content of these folders
+# Don't track content of these folders/files
+.http_log.*
 .vscode.*
 __pycache__
+downloads
 
 # Compiled source #
 ###################

@@ -1,8 +1,11 @@
 import math
-import json
 import os
 import re
+import requests
 import sys
+
+#my local constants
+import constants
 
 class Functions:
     def display_download(self, title, progress, total):
@@ -44,10 +47,9 @@ class Functions:
             self.display_download(title, i, pages)
         #end_for_loop
         print("\n")
-    #end_cf_download
+    #end_cf_download     
 
     def run_main_app(self):
-        with open(".data.json") as data_file:
-            cmd = "python " + json.load(data_file)["main"]
-            os.system(cmd)
+        cmd = "python " + constants.DATA["main"]
+        os.system(cmd)
     #end_run_main

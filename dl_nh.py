@@ -27,7 +27,7 @@ def nh_parse(link):
 
 def nh_download(url, is_gallery):
     if is_gallery:
-        #throws to gallery, subject to change
+        #throws to reader, subject to change
         url += "1"
     content = scraper.get(url).content
     soup = BeautifulSoup(content, "html.parser")

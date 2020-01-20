@@ -1,7 +1,7 @@
-import json
 import os
 
-data = {}
+#my local constants
+import constants
 
 def parse_url(url, data):
     sites = data.keys()
@@ -14,8 +14,6 @@ def parse_url(url, data):
             os.system(cmd)
 #end_parse_url
 
-with open(".data.json") as data_file:
-    data = json.load(data_file)["sites"]
 print("\n")
 url = input("Enter URL of (H-)Mango: ")
-parse_url(url, data)
+parse_url(url, constants.DATA["sites"])

@@ -1,4 +1,11 @@
-{
+#sites
+NH = "https://nhentai.net"
+CAFE = "https://hentai.cafe"
+DEX = "https://mangadex.org"
+
+
+#data
+DATA = {
     "main": ".main.py",
     "sites": {
         "hentai.cafe": "dl_cafe.py",

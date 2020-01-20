@@ -1,8 +1,7 @@
-from functions import Functions
-
 class Template:
     def __init__(self, argv, input_str):
         self.link = ""
+        #boolean on whether to run .main.py after finishing operation
         self.run_main = False
         self.input_str = input_str
 
@@ -30,6 +29,9 @@ class Template:
     #end_restart_app
 
     #either runs .main.py or requests for URL again depending on arguments on launch
+    #run_main argument => function to run the .main.py script
+    #restart argument  => function to restart the individual site .py file, 
+    #could be the restart_app function above if configured
     def end(self, run_main, restart):
         if self.run_main:
             run_main()

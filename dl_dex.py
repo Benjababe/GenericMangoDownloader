@@ -1,7 +1,8 @@
-from bs4 import BeautifulSoup
-import requests
+from datetime import datetime
+import math
 import os
 import re
+import requests
 import sys
 
 from urllib.parse import urlparse
@@ -9,13 +10,26 @@ from urllib.parse import urlparse
 #local libs
 from template import Template
 from functions import Functions
+import constants
 
-#chapter_id
-api_format = "https://mangadex.org/api/?id={}&type=chapter"
-#hash, filename
-img_format = "https://mangadex.org/data/{}/{}"
+#type(chapter/manga), chapter/manga id
+api_format = constants.DEX + "/api/{}/{}"
+#server, hash, filename
+img_format = "{}/{}/{}"
 
 functions = Functions()
+
+def res_hook(res, *args, **kwargs):
+    log = open(".http_log.txt", "a")
+    log_str = "{} -- HTTP Connection with : '{}' resulted in a status code of '{}'".format(
+        datetime.now().strftime("%H:%M:%S"), res.url, res.status_code
+    )
+    if "Content-Length" in res.headers.keys():
+        #shows dl size in KB
+        log_str += " with a download size of {}KB".format(round(int(res.headers["Content-Length"])/1024, 1))
+    log.write(log_str + "\n")
+    log.close()
+#end_res_hook
 
 #check sort url whether it is the reader or the preview page
 def dex_parse(link):
@@ -29,79 +43,113 @@ def dex_parse(link):
     reader_match = re.match(reader_pattern, path)
 
     if preview_match and preview_match.span()[1] == len(path):
-        dex_preview(link)
+        mango_id = path.split("/")[2]
+        dex_mango_id_parser(mango_id)
     elif reader_match and reader_match.span()[1] == len(path):
-        dex_reader(link, path)
+        chapter_id = path.split("/")[2]
+        dex_reader(chapter_id)
     else:
-        print("Error with URL provided...")
-        link = dex.request_link()
-        dex_parse(link)
+        dex_error()
 #end_dex_parse
 
-def dex_preview(url):
-    #filtering language to englando
-    jar = requests.cookies.RequestsCookieJar()
-    jar.set("mangadex_filter_langs", "1")
-    res = requests.get(url, cookies=jar).text
-    soup = BeautifulSoup(res, "html.parser")
-    chapter_array = soup.findAll("div", {"class": "chapter-row"})[1:]
-    chapter_dict = filter_chapters(chapter_array)
-    chapter_no_arr = list(chapter_dict.keys())
+def dex_mango_id_parser(mango_id, dl_input = -1):
+    res = requests.get(api_format.format("manga", mango_id), hooks = hooks)
+    res.close()
+    json = res.json()
+    mango_info = {"mango_title": json["manga"]["title"], "chapters": []}
+    chapters = json["chapter"]
+    chapter_num = []
+    for id in chapters:
+        #englando chapters
+        if chapters[id]["lang_code"].upper() == "GB":
+            chapter_info = chapters[id]
+            chapter_info["id"] = id
+            chapter_num.append(float(chapter_info["chapter"]))
+            mango_info["chapters"].insert(0, chapter_info)
+    #end_for_loop
+    chapter_num.sort()
     str_dl = "Please indicate which chapters to download ({}-{}) eg. 1-14: "
-    u_input = input(str_dl.format(chapter_no_arr[0], chapter_no_arr[-1]))
-    dex_parse_input(u_input, chapter_dict)
+    #shows first and last chapters in the list
+    if dl_input == -1:
+        dl_input = input(str_dl.format(chapter_num[0], chapter_num[-1]))
+    dl = dl_input.split("-")
+    #single chapter selected
+    if len(dl) == 1:
+        chapter = [ float(dl[0]) ]
+    #multiple chapters selected
+    elif len(dl) == 2:
+        chapter = [ float(dl[0]), float(dl[1]) ]
+    pending_downloads = manga_info_retriever(mango_info, chapter)
+    dex_download(pending_downloads)
 #end_dex_preview
 
-def dex_reader(url, path):
-    soup = BeautifulSoup(requests.get(url).text, "html.parser")
-    title = soup.title.string
-    mango_id = path.split("/")[2]
-    res = requests.get(api_format.format(mango_id)).json()
-    hash = res["hash"]
-    page_array = res["page_array"]
-    headers = {"Connection": "Keep-Alive"}
+def manga_info_retriever(mango_info, chapter):
+    def chapter_filter(chapter_info):
+        ch = chapter_info["chapter"]
+        if len(chapter) == 1:
+            if float(ch) == chapter[0]:
+                return True
+            else:
+                return False
+        elif len(chapter) == 2:
+            min = chapter[0]
+            max = chapter[1]
+            if float(ch) >= min and float(ch) <= max:
+                return True
+            else:
+                return False
+    mango_info["chapters"] = list(filter(chapter_filter, mango_info["chapters"]))
+    return mango_info
+#end_manga_info_retriever
 
-    folder_path = re.sub(r"[\\/:*?\"<>|]", "", title)
-
-    if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-
-    for i in range(0, len(page_array)):
-        img_url = img_format.format(hash, page_array[i])
-        res = requests.get(img_url, headers=headers, stream=True)
-        with open("{}/{}".format(folder_path, page_array[i]), "wb") as f:
-            f.write(res.content)
-            f.close()
-        res.close()
-        functions.display_download(title, i + 1, len(page_array))
-    #end_for_loop
-    print("\n")
+def dex_reader(chapter_id):
+    res = requests.get(api_format.format("chapter", chapter_id), hooks = hooks)
+    res.close()
+    json = res.json()
+    dex_mango_id_parser(json["manga_id"], json["chapter"])
 #end_dex_reader
 
-def filter_chapters(chapter_array):
-    chapter_dict = {}
-    chapter_array = chapter_array[::-1]
-    for i in range(0, len(chapter_array)):
-        chapter_no = chapter_array[i]["data-chapter"]
-        chapter_url = chapter_array[i].find("a")["href"]
-        #{ 1: chapter_url, 2: chapter_url, ... }
-        chapter_dict[chapter_no] = chapter_url
-    return chapter_dict
-#end_filter_chapters
+def dex_error():
+    print("Error with URL provided...")
+    dex.link = ""
+    link = dex.request_link()
+    dex_parse(link)
 
-def dex_parse_input(u_input, chapter_dict):
-    chapters = u_input.split("-")
-    if len(chapters) == 1:
-        path = chapter_dict[chapters[0]]
-        dex_reader("https://mangadex.org" + path, path)
-    elif len(chapters) == 2:
-        for i in range(float(chapters[0]), float(chapters[1]) + 1):
-            path = chapter_dict[str(i)]
-            dex_reader("https://mangadex.org" + path, path)
-        #end_for_loop
-    #end_if_else
+#url_list variable is only needed to retrieve title of chapters
+def dex_download(pending_downloads):
+    title = pending_downloads["mango_title"]
+    chapters = pending_downloads["chapters"]
+    #in case the ssl decides to go nuts
+    headers = { "Connection": "Keep-Alive" }
+
+    for chapter in chapters:
+        res = requests.get(api_format.format("chapter", chapter["id"]), hooks = hooks)
+        res.close()
+        ch_data = res.json()
+        #getting all the info needed to download image
+        ch_server = ch_data["server"]
+        ch_hash = ch_data["hash"]
+        ch_page_array = ch_data["page_array"]
+        ch_title = "{} Ch. {} - {}".format(title, ch_data["chapter"], ch_data["title"])
+        folder_path = "./downloads/" + re.sub(r"[\\/:*?\"<>|]", "", ch_title)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        for i in range(0, len(ch_page_array)):
+            src = img_format.format(ch_server, ch_hash, ch_page_array[i])
+            res = requests.get(src, headers=headers, hooks = hooks)
+            with open("{}/{}".format(folder_path, ch_page_array[i]), "wb") as img:
+                img.write(res.content)
+                img.close()
+            res.close()
+            functions.display_download(ch_title, i + 1, len(ch_page_array))
+        #end_individual_chapter_download_loop
+        print("\n")
+    #end_chapter_loop
     dex.end(functions.run_main_app, dex.restart_app)
-#end_dex_parse_input
+#end_dex_download
+
+#callback on response for requests library
+hooks = {"response": res_hook}
 
 dex = Template(sys.argv, "Please enter MangoDex URL: ")
 dex.set_post_request(dex_parse)
