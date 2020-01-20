@@ -122,6 +122,9 @@ def dex_download(pending_downloads):
         res.close()
         ch_data = res.json()
         #getting all the info needed to download image
+        if ch_data["status"] == "external":
+            print("Mango is currently only available on: {}".format(ch_data["external"]))
+            break
         ch_server = ch_data["server"]
         ch_hash = ch_data["hash"]
         ch_page_array = ch_data["page_array"]

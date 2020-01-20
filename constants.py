@@ -13,8 +13,14 @@ DOWNLOAD_PATH = "./downloads/"
 DATA = {
     "main": ".main.py",
     "sites": {
-        "hentai.cafe": "dl_cafe.py",
-        "nhentai.net": "dl_nh.py",
-        "mangadex.org": "dl_dex.py"
+        "hentai.cafe": {
+            "dl_cafe": "Cafe"
+        }, 
+        "nhentai.net": {
+            "dl_nh": "NH"
+        }, 
+        "mangadex.org": {
+            "dl_dex": "Dex"
+        }
     }
 }
