@@ -1,7 +1,7 @@
 import os
 
 #my local constants
-import constants
+import constants as const
 
 def parse_url(url, data):
     sites = data.keys()
@@ -16,4 +16,4 @@ def parse_url(url, data):
 
 print("\n")
 url = input("Enter URL of (H-)Mango: ")
-parse_url(url, constants.DATA["sites"])
+parse_url(url, const.DATA["sites"])

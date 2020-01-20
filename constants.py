@@ -1,7 +1,10 @@
 #sites
 NH = "https://nhentai.net"
+
 CAFE = "https://hentai.cafe"
+
 DEX = "https://mangadex.org"
+DEX_LANG = "GB"
 
 
 #data

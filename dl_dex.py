@@ -10,10 +10,10 @@ from urllib.parse import urlparse
 #local libs
 from template import Template
 from functions import Functions
-import constants
+import constants as const
 
 #type(chapter/manga), chapter/manga id
-api_format = constants.DEX + "/api/{}/{}"
+api_format = const.DEX + "/api/{}/{}"
 #server, hash, filename
 img_format = "{}/{}/{}"
 
@@ -61,7 +61,7 @@ def dex_mango_id_parser(mango_id, dl_input = -1):
     chapter_num = []
     for id in chapters:
         #englando chapters
-        if chapters[id]["lang_code"].upper() == "GB":
+        if chapters[id]["lang_code"].upper() == const.DEX_LANG:
             chapter_info = chapters[id]
             chapter_info["id"] = id
             chapter_num.append(float(chapter_info["chapter"]))

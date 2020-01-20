@@ -5,7 +5,7 @@ import requests
 import sys
 
 #my local constants
-import constants
+import constants as const
 
 class Functions:
     def display_download(self, title, progress, total):
@@ -50,6 +50,6 @@ class Functions:
     #end_cf_download     
 
     def run_main_app(self):
-        cmd = "python " + constants.DATA["main"]
+        cmd = "python " + const.DATA["main"]
         os.system(cmd)
     #end_run_main
