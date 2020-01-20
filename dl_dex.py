@@ -19,17 +19,12 @@ img_format = "{}/{}/{}"
 
 functions = Functions()
 
-def res_hook(res, *args, **kwargs):
-    log = open(".http_log.txt", "a")
-    log_str = "{} -- HTTP Connection with : '{}' resulted in a status code of '{}'".format(
-        datetime.now().strftime("%H:%M:%S"), res.url, res.status_code
-    )
-    if "Content-Length" in res.headers.keys():
-        #shows dl size in KB
-        log_str += " with a download size of {}KB".format(round(int(res.headers["Content-Length"])/1024, 1))
-    log.write(log_str + "\n")
-    log.close()
-#end_res_hook
+class Dex:
+    def __init__(self):
+        self.SITE = const.DEX
+
+    def download(self, url):
+        dex_parse(url)
 
 #check sort url whether it is the reader or the preview page
 def dex_parse(link):
@@ -68,7 +63,7 @@ def dex_mango_id_parser(mango_id, dl_input = -1):
             mango_info["chapters"].insert(0, chapter_info)
     #end_for_loop
     chapter_num.sort()
-    str_dl = "Please indicate which chapters to download ({}-{}) eg. 1-14: "
+    str_dl = "Please indicate which chapter(s) to download ({}-{}) eg. 1-14: "
     #shows first and last chapters in the list
     if dl_input == -1:
         dl_input = input(str_dl.format(chapter_num[0], chapter_num[-1]))
@@ -131,7 +126,7 @@ def dex_download(pending_downloads):
         ch_hash = ch_data["hash"]
         ch_page_array = ch_data["page_array"]
         ch_title = "{} Ch. {} - {}".format(title, ch_data["chapter"], ch_data["title"])
-        folder_path = "./downloads/" + re.sub(r"[\\/:*?\"<>|]", "", ch_title)
+        folder_path = const.DOWNLOAD_PATH + re.sub(r"[\\/:*?\"<>|]", "", ch_title)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         for i in range(0, len(ch_page_array)):
@@ -145,13 +140,16 @@ def dex_download(pending_downloads):
         #end_individual_chapter_download_loop
         print("\n")
     #end_chapter_loop
-    dex.end(functions.run_main_app, dex.restart_app)
+    if __name__ == "__main__":
+        dex.restart_app()
 #end_dex_download
 
 #callback on response for requests library
-hooks = {"response": res_hook}
+hooks = {"response": functions.res_hook}
 
-dex = Template(sys.argv, "Please enter MangoDex URL: ")
-dex.set_post_request(dex_parse)
-link = dex.request_link()
-dex_parse(link)
+#only runs this snippet if ran by dl_dex.py
+if __name__ == "__main__":
+    dex = Template("Please enter MangoDex URL: ")
+    dex.set_post_request(dex_parse)
+    link = dex.request_link()
+    dex_parse(link)

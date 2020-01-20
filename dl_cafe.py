@@ -3,12 +3,21 @@ import cfscrape
 import re
 import sys
 
+#local lib
 from functions import Functions
 from template import Template
+import constants as const
 
 #setup
 scraper = cfscrape.create_scraper()
 functions = Functions()
+
+class Cafe:
+    def __init__(self):
+        self.SITE = const.CAFE
+
+    def download(self, url):
+        cafe_parse(url)
 
 #check sort url whether it is the reader or the preview page
 def cafe_parse(link):
@@ -53,10 +62,13 @@ def cafe_reader(url):
 
     functions.cf_download(scraper, title, zero, pages, ext, base)
     
-    cafe.end(functions.run_main_app, cafe.restart_app)
+    if __name__ == "__main__":
+        cafe.restart_app()
 #end_cafe_reader
 
-cafe = Template(sys.argv, "Please enter Cafe URL: ")
-cafe.set_post_request(cafe_parse)
-link = cafe.request_link()
-cafe_parse(link)
+#only runs this snippet if ran by dl_cafe.py
+if __name__ == "__main__":
+    cafe = Template("Please enter Cafe URL: ")
+    cafe.set_post_request(cafe_parse)
+    link = cafe.request_link()
+    cafe_parse(link)

@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 import os
 import re
@@ -15,6 +16,18 @@ class Functions:
         sys.stdout.write(download_status)
         sys.stdout.flush()
     #end init
+
+    def res_hook(self, res, *args, **kwargs):
+        log = open(".http_log.txt", "a")
+        log_str = "{} -- HTTP Connection with : '{}' resulted in a status code of '{}'".format(
+            datetime.now().strftime("%H:%M:%S"), res.url, res.status_code
+        )
+        if "Content-Length" in res.headers.keys():
+            #shows dl size in KB
+            log_str += " with a download size of {}KB".format(round(int(res.headers["Content-Length"])/1024, 1))
+        log.write(log_str + "\n")
+        log.close()
+    #end_res_hook
 
     def has_zero(self, url):
         check = url.rfind(".") - 2
@@ -34,7 +47,7 @@ class Functions:
             filename = self.generate_filename(zero, i, ext)
             img_url = base + "/" + filename
             #removes all folder incompatible characters
-            folder_path = re.sub(r"[\\/:*?\"<>|]", "", title)
+            folder_path = const.DOWNLOAD_PATH + re.sub(r"[\\/:*?\"<>|]", "", title)
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
 
@@ -53,3 +66,7 @@ class Functions:
         cmd = "python " + const.DATA["main"]
         os.system(cmd)
     #end_run_main
+#end_Functions_class
+
+if __name__ == "__main__":
+    print("Dont run me fool")

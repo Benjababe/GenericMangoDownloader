@@ -6,6 +6,8 @@ CAFE = "https://hentai.cafe"
 DEX = "https://mangadex.org"
 DEX_LANG = "GB"
 
+#stuff
+DOWNLOAD_PATH = "./downloads/"
 
 #data
 DATA = {

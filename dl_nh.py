@@ -7,22 +7,33 @@ from urllib.parse import urlparse
 #local lib
 from functions import Functions
 from template import Template
+import constants as const
 
 #setup
 scraper = cfscrape.create_scraper()
 functions = Functions()
 
-#TODO include parsing failure on invalid URL entry
+class NH:
+    def __init__(self):
+        self.SITE = const.NH
+
+    def download(self, url):
+        nh_parse(url)
 
 #check sort url whether it is the reader or the preview page
 def nh_parse(link):
     if type(link) == type("str"):
         url = link.strip()
     path = urlparse(url).path
-    #if length = 4 => gallery   if length = 5 => reader
-    length = len(path.split("/"))
-    is_gallery = True if length == 4 else False
-    nh_download(url, is_gallery)
+    #arr = ["g", "nh_id", "page_if_entered"]
+    arr = list(filter(len, path.split("/")))
+    #if length = 2 => gallery   if length = 3 => reader
+    if arr[0] == "g" and len(arr) == 2:
+        nh_download(url, True)
+    elif arr[0] == "g" and len(arr) == 3:
+        nh_download(url, False)
+    else:
+        print("Error with URL provided...")
 #end_nh_parse
 
 def nh_download(url, is_gallery):
@@ -45,10 +56,13 @@ def nh_download(url, is_gallery):
 
     functions.cf_download(scraper, title, zero, pages, ext, base)
 
-    nh.end(functions.run_main_app, nh.restart_app)
+    if __name__ == "__main__":
+        nh.restart_app()
 #end_nh_reader
 
-nh = Template(sys.argv, "Please enter NH URL: ")
-nh.set_post_request(nh_parse)
-link = nh.request_link()
-nh_parse(link)
+#only runs this snippet if ran by dl_nh.py
+if __name__ == "__main__":
+    nh = Template("Please enter NH URL: ")
+    nh.set_post_request(nh_parse)
+    link = nh.request_link()
+    nh_parse(link)
