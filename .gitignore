@@ -1,5 +1,8 @@
 # Don't track content of these folders/files
-.http_log.*
+*/scripts/.http_log.*
+*/scripts/__pycache__
+*/scripts/downloads
+*.pckl
 .vscode.*
 __pycache__
 downloads

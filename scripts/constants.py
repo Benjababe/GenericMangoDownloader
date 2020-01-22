@@ -4,10 +4,15 @@ NH = "https://nhentai.net"
 CAFE = "https://hentai.cafe"
 
 DEX = "https://mangadex.org"
+DEX_READER = "https://mangadex.org/chapter/{}"
 DEX_LANG = "GB"
 
 #stuff
+MAIN_DL = "download"
+MAIN_CH = "chapters"
+
 DOWNLOAD_PATH = "./downloads/"
+RESUME_PATH = "./{}.pckl"
 
 #data
 DATA = {
