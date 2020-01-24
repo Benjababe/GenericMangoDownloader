@@ -1,4 +1,0 @@
-11:04:40 -- HTTP Connection with : 'https://mangadex.org/api/manga/41655' resulted in a status code of '200'
-11:05:48 -- HTTP Connection with : 'https://mangadex.org/api/manga/41655' resulted in a status code of '200'
-11:06:04 -- HTTP Connection with : 'https://mangadex.org/api/manga/41655' resulted in a status code of '200'
-11:06:14 -- HTTP Connection with : 'https://mangadex.org/api/manga/41655' resulted in a status code of '200'
