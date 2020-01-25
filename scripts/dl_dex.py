@@ -27,7 +27,18 @@ class Dex:
         self.CHAPTER_LIST = "chapter_list"
 
     def get_chapters(self, url):
-        return dex_parse(url, end = self.CHAPTER_LIST)
+        mango_info = dex_parse(url, end = self.CHAPTER_LIST)
+        chapter_urls = []
+        for chapter in mango_info[1]["chapters"]:
+            chapter_urls.append(const.DEX_READER.format(chapter["id"]))
+        ret = {
+            "mango_title":  mango_info[1]["mango_title"],
+            "chapter_list": mango_info[0],
+            "chapter_urls": chapter_urls,
+            "thumb_url": cover_format.format(mango_info[1]["mango_id"])
+        }
+
+        return ret
 
     def download(self, url):
         check_resume()
@@ -59,7 +70,7 @@ def dex_mango_id_parser(mango_id, dl_input = -1, end = None):
     res = requests.get(api_format.format("manga", mango_id), hooks = hooks)
     res.close()
     json = res.json()
-    mango_info = {"mango_title": json["manga"]["title"], "chapters": []}
+    mango_info = { "mango_id": mango_id, "mango_title": json["manga"]["title"], "chapters": [] }
     chapters = json["chapter"]
     chapter_nums = []
     for id in chapters:
