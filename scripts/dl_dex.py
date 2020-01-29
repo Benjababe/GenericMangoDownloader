@@ -4,6 +4,7 @@ import pickle
 import re
 import requests
 import sys
+import time
 
 from urllib.parse import urlparse
 
@@ -183,18 +184,28 @@ def handle_chapter_download(title, chapter, pickle_info):
     ch_data = res.json()
     ch_server, ch_hash, ch_page_array, ch_title, folder_path = get_chapter_info(ch_data, title)
 
-    #creates download folder
+    #creates download folder if doesn't exist
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
     for pg in range(0, len(ch_page_array)):
         if pg >= pickle_info[0]:
             src = img_format.format(ch_server, ch_hash, ch_page_array[pg])
-            res = requests.get(src, headers={"Connection": "Keep-Alive"}, hooks = hooks)
-            with open("{}/{}".format(folder_path, ch_page_array[pg]), "wb") as img:
-                img.write(res.content)
-                img.close()
-            res.close()
+            #repeats image download 5 times in event of an exception being caught
+            for attempt in range(5):
+            	try:
+            		res = requests.get(src, headers={"Connection": "Keep-Alive"}, hooks = hooks)
+            		with open("{}/{}".format(folder_path, ch_page_array[pg]), "wb") as img:
+                		img.write(res.content)
+                		img.close()
+            		res.close()
+            	except Exception as ex:
+            		print("\nProblem with download, retrying in 2 seconds...")
+            		time.sleep(2)
+            	else:
+            		break
+            else:
+            	print("Error with download. This will only show if image failed to download 5 times :(")
             #updates pickle on download status every page dl completion
             dex.update_pickle([pg, pickle_info[1], pickle_info[2]])
             functions.display_download(ch_title, pg + 1, len(ch_page_array))
