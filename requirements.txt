@@ -1,5 +1,5 @@
-cfscrape==2.1.1
-requests==2.24.0
-beautifulsoup4==4.9.1
-Pillow==7.1.2
-Pmw==2.0.1
+cfscrape>=2.1.1
+requests>=2.24.0
+beautifulsoup4>=4.9.1
+Pillow>=7.1.2
+Pmw>=2.0.1
