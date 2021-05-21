@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import bs4
 import html
+import json
 import math
 import os
 import pickle
@@ -22,13 +23,13 @@ import constants as const
 #session > basic requests
 session = requests.Session()
 
-#type(chapter/manga), chapter/mango id		eg. /api/chapter/12345
-api_format = const.DEX + "/api/{}/{}"
-#server, hash, filename						eg. s5.mangadex.org/data/1c94608f80871458ece9f5decdc7481d/X1.png
+# type(chapter/manga), chapter/mango id		eg. /api/chapter/12345
+api_format = const.DEX + "/api/v2/{}/{}"
+# server, hash, filename						eg. s5.mangadex.org/data/1c94608f80871458ece9f5decdc7481d/X1.png
 img_format = "{}/{}/{}"
-#action, mango_id, type, UNIX time
-#only unfollowing will use "manga_unfollow" for action. The rest will use "manga_follow"
-#type => mango_id = unfollow, 1 = reading/follow, 2 = completed, 3 = on hold, 4 = plan to read, 5 = dropped, 6 = plan to read
+# action, mango_id, type, UNIX time
+# only unfollowing will use "manga_unfollow" for action. The rest will use "manga_follow"
+# type => mango_id = unfollow, 1 = reading/follow, 2 = completed, 3 = on hold, 4 = plan to read, 5 = dropped, 6 = plan to read
 ajax_format = const.DEX + "/ajax/actions.ajax.php?function={}&id={}&type={}&_={}"
 
 #see functions.py
@@ -53,7 +54,25 @@ class Dex:
 	SITE = const.DEX
 	ABBR = const.DEX_ABBR
 	RANDOM = SITE + "/manga"
-	SEARCH = SITE + "/quick_search/{}"
+
+	# uses POST
+	LOGIN = const.DEX_API + "auth/login"
+
+	# use search query
+	SEARCH = const.DEX_API + "manga/?title={}&limit=20"
+
+	# use manga id
+	FIND_MANGO_ID = const.DEX_API + "chapter/?manga={}&limit=100&translatedLanguage={}"
+
+	# use chapter id
+	FIND_CHAPTER_ID = const.DEX_API + "chapter/{}"
+
+	# use group id
+	FIND_GROUP_ID = const.DEX_API + "group/{}"
+
+	# use chapter id
+	FIND_AT_HOME_URL = const.DEX_API + "at-home/server/{}"
+
 	def __init__(self):
 		session.cookies = dex_template.get_pickle(dex_template.cookies_pickle, session.cookies)
 		pass
@@ -84,10 +103,11 @@ class Dex:
 		return ret
 	#end_get_chapters
 
-    #disp and messagebox for __main_gui to pass through tkinter elements
+    # disp and messagebox for __main_gui to pass through tkinter elements
 	def download(self, id_list, disp = f.empty, messagebox = None):
 		f.set_disp(disp)
-		#doesn't do anything if id is already put in
+
+		# doesn't do anything if id is already put in
 		id_list = [self.get_chapter_id(url) for url in id_list]
 		check_resume(messagebox = messagebox)
 		dex_reader(id_list)
@@ -150,37 +170,42 @@ def dex_reader(chapter_ids):
 
 #handles any preview links
 def dex_mango_id_parser(mango_id, dl_input = -1):
-	res = session.get(api_format.format("manga", mango_id))
+	api_url = api_format.format("manga", mango_id)
+	res = session.get(api_url)
 	res.close()
-	json = res.json()
+	data = res.json()["data"]
 	mango_info = { 
 		"mango_id": mango_id, 
-		"mango_title": json["manga"]["title"], 
-		"cover_url": const.DEX + json["manga"]["cover_url"],
-		"description": json["manga"]["description"],
+		"mango_title": data["title"], 
+		"cover_url": data["mainCover"],
+		"description": data["description"],
 		"chapters": [] 
 	}
-	#in event there are no chapters at all regardless of language
+
+	# in event there are no chapters at all regardless of language
 	try:
-		chapters = json["chapter"]
+		res = session.get(api_url + "/chapters")
+		res.close()
+		data = res.json()["data"]
+		chapters = data["chapters"]
 	except KeyError:
 		no_chap_found()
+
 	chapter_nums = []
-	id_list = list(chapters.keys())
-	id_list.sort()
-	for m_id in id_list:
-		#englando chapters
-		chapter_info = chapters[m_id]
-		if chapter_info["lang_code"].lower() in dex_template.LANG and f.is_float(chapter_info["chapter"]):
-			chapter_info["id"] = m_id
-			chapter_nums.append(float(chapter_info["chapter"]))
-			mango_info["chapters"].insert(0, chapter_info)
+	for chapter in chapters:
+		# ensures chapters are in language set and chapters are numbers
+		if chapter["language"].lower() in dex_template.LANG and f.is_float(chapter["chapter"]):
+			chapter_nums.append(float(chapter["chapter"]))
+			mango_info["chapters"].insert(0, chapter)
 	#end_for_loop
+
 	chapter_nums.sort()
-	#no chapters found in englando or maybe selected language in the future :\
+
+	# no chapters found in englando or maybe selected language in the future :\
 	if len(chapter_nums) == 0:
 		no_chap_found()
-	#halts operation of the end is the desired chapter listing
+
+	# halts operation of the end is the desired chapter listing
 	if (dex_template.END == dex_template.END_CHAPTER_LIST):
 		return mango_info
 	else:
@@ -197,17 +222,20 @@ def no_chap_found():
 		dex_parse(link)
 #end_no_chap_found
 
-#requests user input for which chapters to download
+# requests user input for which chapters to download
 def dex_request_chapters(mango_info, chapter_nums, dl_input = -1):
 	str_dl = "Please indicate which chapter(s) to download ({}-{}): "
-	#shows first and last chapters in the list
+
+	# shows first and last chapters in the list
 	while dl_input == -1 or dl_input == "":
 		dl_input = input(str_dl.format(chapter_nums[0], chapter_nums[-1]))
 	dl = dl_input.split("-")
-	#single chapter selected
+
+	# single chapter selected
 	if len(dl) == 1:
 		chapter = [ float(dl[0]) ]
-	#multiple chapters selected
+
+	# multiple chapters selected
 	elif len(dl) == 2:
 		chapter = [ float(dl[0]), float(dl[1]) ]
 	pending_downloads = mango_chapter_filter(mango_info, chapter)
@@ -217,13 +245,15 @@ def dex_request_chapters(mango_info, chapter_nums, dl_input = -1):
 def mango_chapter_filter(mango_info, chapter):
 	def chapter_filter(chapter_info):
 		ch = chapter_info["chapter"]
-		#only allows 1 chapter number through if only 1 chapter was selected
+
+		# only allows 1 chapter number through if only 1 chapter was selected
 		if len(chapter) == 1:
 			if float(ch) == chapter[0]:
 				return True
 			else:
 				return False
-		#allows all chapters in range if given so. eg. if 1-5 was given, every chapter between including 1.2, 2.5 will be returned
+
+		# allows all chapters in range if given so. eg. if 1-5 was given, every chapter between including 1.2, 2.5 will be returned
 		elif len(chapter) == 2:
 			min = chapter[0]
 			max = chapter[1]
@@ -239,30 +269,28 @@ def mango_chapter_filter(mango_info, chapter):
 #weed out duplicate chapters. SURELY THERE HAS TO BE AN CLEANER OR EASIER WAY WTFF
 def check_mango_duplicates(mango_info):
 	f.vprint("Checking for chapter duplicates...")
-	#to_keep is a list of indexes of mango_info["chapters"] to keep after dupe check, chapter_storage is direct data from mangodex
+	# to_keep is a list of indexes of mango_info["chapters"] to keep after dupe check, chapter_storage is direct data from mangodex
 	to_keep, chapter_storage = [], {}
-	#for keeping group names
+	# for keeping group names
 	groups = {}
-	#organising chapters
+	# organising chapters
 	for i in range(0, len(mango_info["chapters"])):
 		chapter = mango_info["chapters"][i]
-		g_id = chapter["group_id"]
+		g_id = chapter["groups"][0]
 		if not g_id in list(groups.keys()):
 			res = session.get(api_format.format("chapter", chapter["id"])).json()
-			#what a long one. just refer to json output of /api/manga/{mango_id}
-			group_name = session.get(api_format.format("manga", res["manga_id"]))\
-						 .json()["chapter"][chapter["id"]]["group_name"]
+			group_name = res["data"]["groups"][0]["name"]
 			groups[g_id] = group_name
 		if chapter["chapter"] in chapter_storage:
 			chapter_storage[chapter["chapter"]].append(str(i) + "_" + groups[g_id])
 		else:
 			chapter_storage[chapter["chapter"]] = [str(i) + "_"+ groups[g_id]]
-	#goes through every chapter and queries for which translation to keep if there are dupes
+	# goes through every chapter and queries for which translation to keep if there are dupes
 	for ch in chapter_storage:
-		#if there are duplicate chapters by different sub groups
+		# if there are duplicate chapters by different sub groups
 		if len(chapter_storage[ch]) > 1:
-			#indexes keeps the index of the chapter of the mango_info["chapters"] list accordingly
-			#eg. indexes[1] = 5, indexes[2] = 6...
+			# indexes keeps the index of the chapter of the mango_info["chapters"] list accordingly
+			# eg. indexes[1] = 5, indexes[2] = 6...
 			indexes = [""]
 			prompt = "There are {} duplicate uploads for chapter {}. Please choose a sub group to download from :\n".format(
 				len(chapter_storage[ch]), ch)
@@ -282,11 +310,11 @@ def check_mango_duplicates(mango_info):
 				to_keep += indexes
 			else: 
 				to_keep.append(indexes[int(index)])
-		#no duplicates of chapter
+		# no duplicates of chapter
 		else:
 			entry = chapter_storage[ch][0]
 			to_keep.append(int(entry.split("_")[0]))
-	#filters chapters by their indexes in to_keep list
+	# filters chapters by their indexes in to_keep list
 	mango_info["chapters"] = [mango_info["chapters"][i] for i in to_keep]
 	return mango_info
 #end_check_duplicates
@@ -317,10 +345,10 @@ def dex_download(pending_downloads, resume = False):
 	title = pending_downloads["mango_title"]
 	chapters = pending_downloads["chapters"]
 
-	#where dl stopped if resume exists
+	# where dl stopped if resume exists
 	resume_ch = -1
 
-	#creates temp file
+	# creates temp file
 	if not os.path.exists(dex_template.resume_pickle):
 		dex_template.update_pickle(dex_template.resume_pickle, [resume_ch, pending_downloads])
 	else:
@@ -328,7 +356,7 @@ def dex_download(pending_downloads, resume = False):
 
 	session.cookies = dex_template.get_pickle(dex_template.cookies_pickle, session.cookies)
 
-	#uses index to keep track of what is currently being download for the pickle
+	# uses index to keep track of what is currently being download for the pickle
 	for i in range(0, len(chapters)):
 		chapter = chapters[i]
 		if i >= resume_ch:
@@ -338,83 +366,102 @@ def dex_download(pending_downloads, resume = False):
 #end_dex_download
 
 def on_end():
-	#deletes resume pickle when program ends naturally
+	# deletes resume pickle when program ends naturally
 	if os.path.exists(dex_template.resume_pickle):
 		os.remove(dex_template.resume_pickle)
 	print("Download completed")
-	#returns after downloads finish. used in GUI and arg_parse
+
+	# returns after downloads finish. used in GUI and arg_parse
 	if dex_template.END == dex_template.END_DOWNLOAD:
 		dex_template.END = dex_template.END_RESET
 		return
 	if __name__ == "__main__":
-	#quits app if download was started with an argument D:
+	# quits app if download was started with an argument D:
 		dex_template.restart_app()
 #end_end(lol)
 
-#getting all the info needed to download image
+# getting all the info needed to download image
 def get_chapter_info(ch_data, title):
-	#ends app if chapter isn't available on main site
+	'''
+	# ends app if chapter isn't available on main site
 	if ch_data["status"] == "external":
 		print("Mango is currently only available on: {}".format(ch_data["external"]))
 		on_end()
-	ch_server = ch_data["server"]
-	ch_hash = ch_data["hash"]
-	ch_page_array = ch_data["page_array"]
-	ch_title = "{} Ch. {} - {}".format(title, ch_data["chapter"], ch_data["title"])
-	ch_group_id = ch_data["group_id"]
+	'''
 
-	f.vprint("Fetching group info...")
-	res = session.get(Dex.SITE + "/group/" + str(ch_group_id))
-	soup = BeautifulSoup(res.content, "html.parser")
-	group = soup.find("span", {"class": "mx-1"}).text
+	data = ch_data["data"]["attributes"]
 
-	#creates folder path based off chapter title, chapter name and scanlator
-	folder_path = const.DOWNLOAD_PATH + re.sub(r"[\\/:*?\"<>|]", "", "{} ({})".format(ch_title, group)).strip()
-	return [ch_server, ch_hash, ch_page_array, ch_title, folder_path]
+	saver = dex_template.get_pickle(data_saver_pickle, False)
+	if saver == True:
+		ch_page_array = data["dataSaver"] if saver else data["data"]
+
+	ch_quality = "data-saver" if saver else "data"
+	ch_hash = data["hash"]
+	ch_title = "Ch. " + data["chapter"].strip() +  (" - " + data["title"] if (data["title"].strip() != "") else "")
+	ch_group_id = ""
+	ch_group_name = ""
+
+	for item in ch_data["relationships"]:
+		if item["type"] == "scanlation_group":
+			f.vprint("Fetching group info...")
+
+			ch_group_id = item["id"]
+			res = session.get(Dex.FIND_GROUP_ID.format(ch_group_id))
+			res.close()
+			ch_group_name = json.loads(res.text)["data"]["attributes"]["name"]
+			break
+
+	# retrieves MangaDex@Home server url
+	res = session.get(Dex.FIND_AT_HOME_URL.format(ch_data["data"]["id"]))
+	res.close()
+	ch_server = json.loads(res.text)["baseUrl"]
+
+	# creates folder path based off chapter title, chapter name and scanlator
+	folder_path = const.DOWNLOAD_PATH + title + "/" + re.sub(r"[\\/:*?\"<>|]", "", "[{}] {}".format(ch_group_name, ch_title)).strip()
+	return [ch_server, ch_quality, ch_hash, ch_page_array, ch_title, folder_path]
 
 def prepare_chapter_download(title, chapter, pickle_info):
 	f.vprint("Fetching chapter info...")
-	res = session.get(api_format.format("chapter", chapter["id"]))
+	res = session.get(Dex.FIND_CHAPTER_ID.format(chapter["id"]))
 	res.close()
-	ch_data = res.json()
 
-	loop = asyncio.get_event_loop()
-	future = asyncio.ensure_future(dl_chapter_async(title, ch_data))
-	#will hold on this line until all downloads in download_async are completed
-	loop.run_until_complete(future)
+	if res.ok:
+		ch_data = json.loads(res.text)
 
-	#marks chapter as read if logged in and indicated so
-	if "mark_on_dl" in session.cookies.keys() and session.cookies.get("mark_on_dl"):
-		chapter_mark("read", chapter["id"])
+		loop = asyncio.get_event_loop()
+		future = asyncio.ensure_future(dl_chapter_async(title, ch_data))
+		# will hold on this line until all downloads in download_async are completed
+		loop.run_until_complete(future)
 
-	#updates pickle on download status every chapter dl completion
-	dex_template.update_pickle(dex_template.resume_pickle, [pickle_info[0], pickle_info[1]])
+		# marks chapter as read if logged in and indicated so
+		if "mark_on_dl" in session.cookies.keys() and session.cookies.get("mark_on_dl"):
+			chapter_mark("read", chapter["id"])
+
+		# updates pickle on download status every chapter dl completion
+		dex_template.update_pickle(dex_template.resume_pickle, [pickle_info[0], pickle_info[1]])
 #end_handle_chapter_download
 
 async def dl_chapter_async(title, ch_data):
 	f.vprint("Loading downloads...")
-	ch_server, ch_hash, ch_page_array, ch_title, folder_path = get_chapter_info(ch_data, title)
+	ch_server, ch_quality, ch_hash, ch_page_array, ch_title, folder_path = get_chapter_info(ch_data, title)
 	urls = []
 	file_paths = []
-	#urls = [img_format.format(ch_server, ch_hash, pg) for pg in ch_page_array]
+	# urls = [img_format.format(ch_server, ch_hash, pg) for pg in ch_page_array]
 	display = [ch_title, 0, len(ch_page_array)]
 
-	#creates download folder if doesn't exist
+	# creates download folder if doesn't exist
 	if not os.path.exists(folder_path):
 		os.makedirs(folder_path)
 
-	#file_paths = [(folder_path + "/" + page) for page in ch_page_array]
+	# file_paths = [(folder_path + "/" + page) for page in ch_page_array]
 
-	#https://mangadex.org/data/... to https://mangadex.org/data-saver/... for the compressed images
-	saver = dex_template.get_pickle(data_saver_pickle, False)
-	if saver == True:
-		ch_server = ch_server.replace("data", "data-saver")
+	for i in range(len(ch_page_array)):
+		url = f"{ch_server}/{ch_quality}/{ch_hash}/{ch_page_array[i]}"
+		urls.append(url)
+		dl_filename = f"{str(i+1)}.{f.get_extension(ch_page_array[i])}"
+		file_paths.append(html.unescape(f"{folder_path}/{dl_filename}"))
 
-	for pg in ch_page_array:
-		urls.append(img_format.format(ch_server, ch_hash, pg))
-		file_paths.append(html.unescape(folder_path + "/" + pg))
-
-	#credits to https://bit.ly/2WT52U5
+	# credits to https://bit.ly/2WT52U5
 	with ThreadPoolExecutor(max_workers=10) as executor:
 		loop = asyncio.get_event_loop()
 		#tasks is a list filled with f.dl_mango_image promises for all page urls
@@ -427,14 +474,15 @@ async def dl_chapter_async(title, ch_data):
 					*(session, urls[i], file_paths[i], True)
 				)
 			)
-		#below will be called when individual download has been completed.
-		#waits for all tasks before ending end_download_async function
+
+		# below will be called when individual download has been completed.
+		# waits for all tasks before ending end_download_async function
 		for res in await asyncio.gather(*tasks):
 			display[1] += 1
 			f.display_download(*display)
 #end_download_async
 
-#queries if user wants to continue previous halted dl
+# queries if user wants to continue previous halted dl
 def check_resume(messagebox = None):
 	dex_template.check_resume(dex_download, messagebox = messagebox)
 #end_check_resume
@@ -450,73 +498,79 @@ def set_data_saver():
 	sys.exit(0)
 #end_set_data_saver
 
-#remember is true because login is separate from the main runtime
+# remember is true because login is separate from the main runtime
 def login(username, password, two_factor = "", remember = 1):
 	print("Logging in...")
-	post_url = const.DEX + "/ajax/actions.ajax.php?function=login"
-	data = {
-		"login_username": username,
-		"login_password": password,
-		"two_factor": two_factor,
-		"remember_me": remember
-	}
-	res = session.post(post_url, headers = ajax_headers, data = data)
-	soup = BeautifulSoup(res.text, "html.parser")
-	error = soup.get_text()
 
-	#site only spits out text response when there's an error
-	if not error:
+	res = session.post(Dex.LOGIN, headers = ajax_headers, json = { "username": username, "password": password })
+	res.close()
+	data = json.loads(res.text)
+
+	# site only spits out text response when there's an error
+	if data["result"] == "ok":
 		session.cookies = res.cookies
+
 		mark_on_dl = input("Would you like to mark chapters as read when downloaded? (y/N) ").lower()
 		if mark_on_dl in ["y", "yes"]:
 			mark_on_dl = "True"
 		elif mark_on_dl in ["", "n", "no"]:
 			mark_on_dl = "False"
-		#proved too unreadable
-		#mark_on_dl = str("True" if mark_on_dl in ["yes", "y"] else not mark_on_dl in ["", "n", "no"])
+
 		else:
 			print("Invalid input, defaulting to no :)")
 		session.cookies.set(name = "mark_on_dl", value = mark_on_dl)
-		#storing login cookies into pickle file
+		session.cookies.set(name = "session", value = data["token"]["session"])
+
+		# storing login cookies into pickle file
 		dex_template.update_pickle(dex_template.cookies_pickle, session.cookies)
 		
 		print("Login successful")
 	else:
-		print("Login unsuccessful. {}".format(error))
+		print("Login unsuccessful: {}".format(data["errors"][0]["title"]))
 #end_login
 
 
 def quick_search(query):
 	print("Searching for: " + query + "...")
-	#don't forget to encode query for url
 	res = session.get(Dex.SEARCH.format(quote(query)))
-	soup = BeautifulSoup(res.text, "html.parser")
-	title_containers = soup.find_all("div", { "class": "p-1 col d-flex align-items-center text-truncate flex-nowrap" })
-	mangaka_containers = soup.find_all("div", { "class": "p-1 d-none d-lg-block col text-truncate" })
-	desc_containers = soup.find_all("div", { "class": "pl-1" })
-	covers = soup.find_all("img", { "class": "rounded" })
+	data = json.loads(res.text)
 
 	results = {}
-	if len(title_containers) == len(mangaka_containers) == len(desc_containers):
-		for i in range(0, len(title_containers)):
-			title_obj = title_containers[i].find("a")
-			title = title_obj.text.replace("\t", " ")
-			mangaka = mangaka_containers[i].find("a").text
-			url = Dex.SITE + title_obj.attrs["href"][0:title_obj.attrs["href"].rfind("/")]
-			cover_url = Dex.SITE + covers[i]["src"]
-			description = desc_containers[i].text.strip()
+	if len(data["results"]) > 0:
+		for i in range(0, len(data["results"])):
+			mango_data = data["results"][i]["data"]
+
 			results[str(i+1)] = { 
-				"title": title, 
-				"mangaka": mangaka, 
-				"description": description, 
-				"url": url, 
-				"cover_url": cover_url 
+				"title": html.unescape(mango_data["attributes"]["title"]["en"]), 
+				"description": mango_data["attributes"]["description"]["en"], 
+				"mango_id": mango_data["id"]
 			}
-			print("{}. {} [{}] [{}]".format(i+1, title, mangaka, url))
+			print("{}. {}".format(i+1, results[str(i+1)]["title"]))
+
 	if dex_template.END == dex_template.END_SEARCH:
 		return results
-	choice = input("Please choose which mango you wish to download (1-{}): ".format(len(title_containers))).strip()
-	dex_parse(results[choice]["url"])
+	choice = input("Please choose which mango you wish to download (1-{}): ".format(len(results))).strip()
+	dex_get_id(results[choice]["title"], results[choice]["mango_id"])
+
+# chapters are limited to 100
+def dex_get_id(title, mango_id):
+	url = Dex.FIND_MANGO_ID.format(mango_id, "en")
+	res = session.get(url)
+
+	data = json.loads(res.text)
+	pending_downloads = {"chapters": [], "mango_title": title}
+
+	for i in range(data["total"]):
+		result = data["results"][i]
+		chapter_data = {
+			"chapter": result["data"]["attributes"]["chapter"],
+			"id": result["data"]["id"]
+		}
+		pending_downloads["chapters"].append(chapter_data)
+
+	res.close()
+	dex_download(pending_downloads)
+#end_dex_get_id
 
 def random():
 	res = session.get(Dex.RANDOM)
@@ -526,13 +580,15 @@ def random():
 	title =  "" if (title == None) else title.text
 	print("You have randomed: " + title + " URL: " + link["href"])
 	dex_parse(link["href"])
-#end_random
+# end_random
 
 def dex_ajax_call(action, _id, _type = 1, time = str(math.floor(time.time())), data = {}):
 	url = ajax_format.format(action, _id, _type, time)
 	print("\nProcessing GET request for URL: " + url)
+
 	res = session.get(url, headers = ajax_headers, data = data)
 	res.close()
+
 	if res.ok:
 		f.vprint("Action completed...")
 		if not res.text == "":
@@ -542,13 +598,13 @@ def dex_ajax_call(action, _id, _type = 1, time = str(math.floor(time.time())), d
 		print(str(res.status_code) + " " + res.text)
 #end_dex_ajax_call
 
-#action has to be either "read" or "unread"
+# action has to be either "read" or "unread"
 def chapter_mark(action, chapter_id):
 	dex_ajax_call("chapter_mark_" + action, chapter_id)
 #end_chapter_mark
 
 def create_comment_thread(ajax_id, chapter_id):
-	#type = 11 for manga comments, 12 for chapter comments
+	# type = 11 for manga comments, 12 for chapter comments
 	create_thread_uri = "https://mangadex.org/ajax/actions.ajax.php?function=start_empty_thread&id=" + ajax_id
 
 	#type value = 1 for manga thread, 3 for chapter thread.
@@ -564,18 +620,18 @@ def create_comment_thread(ajax_id, chapter_id):
 
 def comment(ajax_id, _id, text):
 	url = Dex.SITE
-	#flag = 11 for manga, 12 for chapter
+	# flag = 11 for manga, 12 for chapter
 	if ajax_id == Dex.COMMENT_MANGA:
 		url += "/title/{}/filler/comments".format(_id)
 	elif ajax_id == Dex.COMMENT_CHAPTER:
-		#filler can be anything. server doesn't care
+		# filler can be anything. server doesn't care
 		url += "/chapter/{}/comments".format(_id)
 	data = { "text": text }
 	res = session.get(url)
 	res.close()
 	soup = BeautifulSoup(res.content, "html.parser")
 
-	#finding if thread exists
+	# finding if thread exists
 	btn = soup.find("button", {"id": "post_reply_button"})
 	if btn == None:
 		input_str = "There is no comment thread for this {}. Would you like to create one? (Y/n) ".format(\
@@ -583,9 +639,9 @@ def comment(ajax_id, _id, text):
 		create = input(input_str).lower()
 		if create in ["", "y", "yes"]:
 			x = create_comment_thread(ajax_id, _id)
-			#gives a second for thread creation
+			# gives a second for thread creation
 			time.sleep(1)
-			#re-retrieving comment page for thread id
+			# re-retrieving comment page for thread id
 			if x:
 				res = session.get(url)
 				res.close()
@@ -595,19 +651,20 @@ def comment(ajax_id, _id, text):
 				return
 		else:
 			return
-	#everything below is some hardcoding shit. any change in dex will ruin it
-	#finding comment thread id -> posting comment
+	# everything below is some hardcoding shit. any change in dex will ruin it
+	# finding comment thread id -> posting comment
 	js = res.text
 
-	#looking for script text in the html " var button = $("#post_reply_button") "
-	#it will only exist if logged in
+	# looking for script text in the html " var button = $("#post_reply_button") "
+	# it will only exist if logged in
 	x = js.find("#post_reply_button")
 	if x == -1:
 		print("Error with comment creation. Are you currently logged in?")
 	elif x > 0:
 		js = js[x:]
 		key_start = js.find("url: '")
-		#I want the start of the value instead of the key
+
+		# I want the start of the value instead of the key
 		js = js[key_start + len("url: '"):]
 		reply_path = js[0:js.find("'")]
 		reply_uri = Dex.SITE + reply_path
@@ -615,7 +672,8 @@ def comment(ajax_id, _id, text):
 		if res.ok and res.text == "":
 			print("Comment successfully posted")
 			return
-		#problems with posting comment. only one I know of is if your account is too new / commenting too recently
+
+		# problems with posting comment. only one I know of is if your account is too new / commenting too recently
 		else:
 			#soup to remove html tags from text attribute
 			soup = BeautifulSoup(res.text, "html.parser")
@@ -624,7 +682,7 @@ def comment(ajax_id, _id, text):
 
 def set_language(lang = "idk_fam", default = False):
 	lang_dict = dex_template.get_pickle(dex_template.site_info_pickle)
-	#run from main, getting language set or defaulting to englando
+	# run from main, getting language set or defaulting to englando
 	if default:
 		if len(lang_dict["dex"]["user_language"]) > 0:
 			dex_template.LANG = lang_dict["dex"]["user_language"]
@@ -651,7 +709,8 @@ def set_language(lang = "idk_fam", default = False):
 		nums = lang_input.split(" ")
 		for num in nums:
 			if not num.isnumeric():
-				#resets language setting
+
+				# resets language setting
 				print("The numbers only please...")
 				set_language(lang, default)
 				return
@@ -664,12 +723,12 @@ def set_language(lang = "idk_fam", default = False):
 #actual cancer to format out
 def check_args():
 	manga_status_list = ["u", "f", "c", "h", "p", "d", "r"]
-	#sets max length of printout 100 chars
+	# sets max length of printout 100 chars
 	parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=100))
 	parser.add_argument("-V", "--verbose", action="store_true", dest="verbose", help="Increase output verbosity")
 	parser.add_argument("-DS", "--data-saver", action="store_true", dest="d_saver", help="Downloads compressed images instead")
 	
-	#login will take priority over all others
+	# login will take priority over all others
 	parser.add_argument("-L", "--login", nargs="*", dest="login_data", help="Passes through username, password and 2FA to login")
 	parser.add_argument("-QS", "--quick-search", metavar="query", dest="qsearch", help="Searches the MangoDex database for your query")
 	parser.add_argument("-RD", "--random", action="store_true", dest="random", help="Returns a random mango")
@@ -695,7 +754,8 @@ def check_args():
 
 	for arg in parser.parse_args().__dict__:
 		global f
-		#checks through values for each argument for non empty ones
+
+		# checks through values for each argument for non empty ones
 		val = parser.parse_args().__dict__[arg]
 		if val == True:
 			if arg == "verbose":
@@ -706,11 +766,14 @@ def check_args():
 				exit_after_running = True
 				dex_template.END = dex_template.END_DOWNLOAD
 				random()
-		#type(val)==list is for login and language
+
+		# type(val)==list is for login and language
 		elif type(val) is str or type(val) is list:
-			#exits after running single use functions except for verbose
+
+			# exits after running single use functions except for verbose
 			exit_after_running = True
-			#download
+
+			# download
 			if arg == "lang":
 				set_language(val)
 			if arg == "qsearch":
@@ -720,7 +783,7 @@ def check_args():
 				dex_template.END = dex_template.END_DOWNLOAD
 				dex_parse(val)
 			if arg == "login_data":
-				#the * is to spread the list into the method
+				# the * is to spread the list into the method
 				login(*val)
 			elif arg.split("_")[0] in manga_status_list:
 				_type = manga_status_list.index(arg[0])
@@ -742,19 +805,24 @@ def check_args():
 
 #only runs this snippet if ran by dl_dex.py
 if __name__ == "__main__":
-	#dex_parse runs immediately after user URL input
-	#honestly can't remember why it had to be done like this.
-	#it was initially for the app to continue running in the main file but idk anymore
+
+	# dex_parse runs immediately after user URL input
+	# honestly can't remember why it had to be done like this.
+	# it was initially for the app to continue running in the main file but idk anymore
 	dex_template.set_post_request(dex_parse)
-	#sets any languages given through --languages argument
+
+	# sets any languages given through --languages argument
 	set_language(default = True)
-	#checks if session cookies exist
+
+	# checks if session cookies exist
 	session.cookies = dex_template.get_pickle(dex_template.cookies_pickle, session.cookies)
-	#runs through list of preset arguments
+
+	# runs through list of preset arguments
 	check_args()
+
 	#checks if resume.pckl exists
 	check_resume()
 
-	#app runs, starts by requesting link
+	# app runs, starts by requesting link
 	link = dex_template.request_link()
 	dex_parse(link)

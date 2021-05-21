@@ -88,11 +88,27 @@ class Functions:
     #end_has_zero
 
     def is_float(self, num):
+        #oneshot edge case
+        if num == "":
+            return False
         try:
             float(num)
             return True
         except:
             return False
+
+    def remove_backslash(self, arr):
+        for i in range(0, len(arr)):
+            if arr[i][-1] == "/":
+                arr[i] = arr[i][:-1]
+            if arr[i][0] == "/":
+                arr[i] = arr[i][1:]
+        return arr
+    #end_remove_backslash
+
+    def get_extension(self, filename):
+        ext = filename.split(".")[1]
+        return ext
 
     def generate_filename(self, zero, page_no, ext):
         z = ""
@@ -113,7 +129,7 @@ class Functions:
             try:
                 with session.get(url) as res:
                     if display:
-                        print("Download for {} completed".format(url))
+                        self.vprint("Download for {} completed".format(url))
                     if file_path != None:
                         with open(file_path, "wb") as img:
                             img.write(res.content)
@@ -151,7 +167,7 @@ class Functions:
 
             scraper.close()
             self.display_download(title, i, pages)
-        # end_for_loop
+        #end_for_loop
         print("\n")
     #end_cf_download
 

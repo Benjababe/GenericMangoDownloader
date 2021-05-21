@@ -9,6 +9,7 @@ CAFE = "https://hentai.cafe/"
 CAFE_ABBR = "Cafe"
 
 DEX = "https://mangadex.org/"
+DEX_API = "https://api.mangadex.org/"
 DEX_READER = "https://mangadex.org/chapter/{}"
 DEX_ABBR = "Dex"
 

@@ -12,7 +12,7 @@ class Template:
             self.cookies_pickle = const.PICKLE_PATH + "/{}.pckl".format(cookies_pickle)
         self.site_info_pickle = const.PICKLE_PATH + "/site_info.pckl"
         #list of language codes. englando as default language (probably only used for dex)
-        self.LANG = ["gb"]
+        self.LANG = ["en"]
         self.link = ""
 
         #code to run app as per normal
