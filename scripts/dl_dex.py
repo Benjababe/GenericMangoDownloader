@@ -55,22 +55,25 @@ class Dex:
 	ABBR = const.DEX_ABBR
 	RANDOM = SITE + "/manga"
 
-	# uses POST
+	# uses POST passing through username and password in json
 	LOGIN = const.DEX_API + "auth/login"
 
-	# use search query
+	# use text to quicksearch titles
 	SEARCH = const.DEX_API + "manga/?title={}&limit=20"
 
-	# use manga id
+	# use manga id to get manga info
 	FIND_MANGO_ID = const.DEX_API + "chapter/?manga={}&limit=100&translatedLanguage={}"
 
-	# use chapter id
+	# gets a random manga
+	FIND_RANDOM = const.DEX_API + "manga/random"
+
+	# use chapter id to get chapter info
 	FIND_CHAPTER_ID = const.DEX_API + "chapter/{}"
 
-	# use group id
+	# use group id to get group info
 	FIND_GROUP_ID = const.DEX_API + "group/{}"
 
-	# use chapter id
+	# use chapter id to find server uri
 	FIND_AT_HOME_URL = const.DEX_API + "at-home/server/{}"
 
 	def __init__(self):
@@ -361,10 +364,12 @@ def dex_download(pending_downloads, resume = False):
 		chapter = chapters[i]
 		if i >= resume_ch:
 			prepare_chapter_download(title, chapter, [i, pending_downloads])
+			print(f"\nChapter {chapter['chapter']} download complete")
 	#end_chapter_loop
 	on_end()
 #end_dex_download
 
+# runs on program exit normally. at least it should
 def on_end():
 	# deletes resume pickle when program ends naturally
 	if os.path.exists(dex_template.resume_pickle):
@@ -392,12 +397,14 @@ def get_chapter_info(ch_data, title):
 	data = ch_data["data"]["attributes"]
 
 	saver = dex_template.get_pickle(data_saver_pickle, False)
-	if saver == True:
-		ch_page_array = data["dataSaver"] if saver else data["data"]
+
+	# regular and datasaver have different filename arrays
+	ch_page_array = data["dataSaver"] if saver else data["data"]
 
 	ch_quality = "data-saver" if saver else "data"
 	ch_hash = data["hash"]
-	ch_title = "Ch. " + data["chapter"].strip() +  (" - " + data["title"] if (data["title"].strip() != "") else "")
+	ch_title = "" if data["chapter"] == None else f"Ch. {data['chapter'].strip()}"
+	ch_title +=  " - " + data["title"] if (data["title"].strip() != "") else ""
 	ch_group_id = ""
 	ch_group_name = ""
 
@@ -549,13 +556,15 @@ def quick_search(query):
 
 	if dex_template.END == dex_template.END_SEARCH:
 		return results
+	
 	choice = input("Please choose which mango you wish to download (1-{}): ".format(len(results))).strip()
-	dex_get_id(results[choice]["title"], results[choice]["mango_id"])
+	chapters_from_id(results[choice]["title"], results[choice]["mango_id"])
 
 # chapters are limited to 100
-def dex_get_id(title, mango_id):
+def chapters_from_id(title, mango_id):
 	url = Dex.FIND_MANGO_ID.format(mango_id, "en")
 	res = session.get(url)
+	res.close()
 
 	data = json.loads(res.text)
 	pending_downloads = {"chapters": [], "mango_title": title}
@@ -568,24 +577,24 @@ def dex_get_id(title, mango_id):
 		}
 		pending_downloads["chapters"].append(chapter_data)
 
-	res.close()
 	dex_download(pending_downloads)
 #end_dex_get_id
 
 def random():
-	res = session.get(Dex.RANDOM)
-	soup = BeautifulSoup(res.text, "html.parser")
-	link = soup.find("link", rel = "canonical")
-	title = link.find("title")
-	title =  "" if (title == None) else title.text
-	print("You have randomed: " + title + " URL: " + link["href"])
-	dex_parse(link["href"])
+	res = session.get(Dex.FIND_RANDOM)
+	res.close()
+
+	data = json.loads(res.text)
+
+	if data["result"] == "ok":
+		
+		chapters_from_id(data["data"]["attributes"]["title"]["en"], data["data"]["id"])
+	else:
+		f.printv("Error with retrieving random mango")
 # end_random
 
 def dex_ajax_call(action, _id, _type = 1, time = str(math.floor(time.time())), data = {}):
 	url = ajax_format.format(action, _id, _type, time)
-	print("\nProcessing GET request for URL: " + url)
-
 	res = session.get(url, headers = ajax_headers, data = data)
 	res.close()
 
