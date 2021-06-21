@@ -58,17 +58,20 @@ class Dex:
 	# uses POST passing through username and password in json
 	LOGIN = const.DEX_API + "auth/login"
 
-	# use text to quicksearch titles
-	SEARCH = const.DEX_API + "manga/?title={}&limit=20"
+	# use manga id to get basic info
+	FIND_MANGO_BY_ID = const.DEX_API + "manga/{}"
 
-	# use manga id to get manga info
-	FIND_MANGO_ID = const.DEX_API + "chapter/?manga={}&limit=100&translatedLanguage={}"
+	# use text to quicksearch titles
+	SEARCH_BY_TEXT = const.DEX_API + "manga/?title={}&limit=20"
+
+	# use manga id to get chapter info
+	FIND_CHAPTER_BY_MANGO_ID = const.DEX_API + "chapter/?manga={}&limit=100&translatedLanguage[]={}"
+	
+	# use chapter id to get chapter info
+	FIND_CHAPTER_BY_CHAPTER_ID = const.DEX_API + "chapter/{}"
 
 	# gets a random manga
 	FIND_RANDOM = const.DEX_API + "manga/random"
-
-	# use chapter id to get chapter info
-	FIND_CHAPTER_ID = const.DEX_API + "chapter/{}"
 
 	# use group id to get group info
 	FIND_GROUP_ID = const.DEX_API + "group/{}"
@@ -84,9 +87,12 @@ class Dex:
 		f.set_disp(disp)
 		dex_template.END = dex_template.END_CHAPTER_LIST
 		mango_info = dex_parse(url)
+
 		if mango_info == None:
 			return False
+
 		chapter_list = []
+
 		for chapter in mango_info["chapters"]:
 			chapter_dict = {
 				"chapter": chapter["chapter"],
@@ -95,12 +101,14 @@ class Dex:
 				"site": "https://mangadex.org"
 			}
 			chapter_list.append(chapter_dict)
+
 		ret = {
 			"mango_title":  mango_info["mango_title"],
 			"description": mango_info["description"],
 			"chapter_list": chapter_list,
 			"cover_url": mango_info["cover_url"]
 		}
+
 		#resets end quota before returning info
 		dex_template.END = dex_template.END_RESET
 		return ret
@@ -130,6 +138,7 @@ class Dex:
 def dex_parse(link):
 	if type(link) == "str":
 		link = link.strip()
+		
 	path = urlparse(link).path
 	preview_pattern = r"\/title\/[0-9]{0,10}.*"
 	reader_pattern = r"\/chapter\/[0-9]{0,10}[\/\\0-9]*"
@@ -140,12 +149,15 @@ def dex_parse(link):
 	f.disp("Checking out {}".format(link))
 	if preview_match and preview_match.span()[1] == len(path):
 		mango_id = path.split("/")[2]
-		return dex_mango_id_parser(mango_id)
+		chapters_from_id("", mango_id)
+
 	elif reader_match and reader_match.span()[1] == len(path):
 		chapter_id = path.split("/")[2]
 		dex_reader([chapter_id])
+
 	if link.lower() == "q":
 		sys.exit(0)
+
 	else:
 		dex_error()
 #end_dex_parse
@@ -170,50 +182,6 @@ def dex_reader(chapter_ids):
 			})
 	dex_download(pending_downloads)
 #end_dex_reader
-
-#handles any preview links
-def dex_mango_id_parser(mango_id, dl_input = -1):
-	api_url = api_format.format("manga", mango_id)
-	res = session.get(api_url)
-	res.close()
-	data = res.json()["data"]
-	mango_info = { 
-		"mango_id": mango_id, 
-		"mango_title": data["title"], 
-		"cover_url": data["mainCover"],
-		"description": data["description"],
-		"chapters": [] 
-	}
-
-	# in event there are no chapters at all regardless of language
-	try:
-		res = session.get(api_url + "/chapters")
-		res.close()
-		data = res.json()["data"]
-		chapters = data["chapters"]
-	except KeyError:
-		no_chap_found()
-
-	chapter_nums = []
-	for chapter in chapters:
-		# ensures chapters are in language set and chapters are numbers
-		if chapter["language"].lower() in dex_template.LANG and f.is_float(chapter["chapter"]):
-			chapter_nums.append(float(chapter["chapter"]))
-			mango_info["chapters"].insert(0, chapter)
-	#end_for_loop
-
-	chapter_nums.sort()
-
-	# no chapters found in englando or maybe selected language in the future :\
-	if len(chapter_nums) == 0:
-		no_chap_found()
-
-	# halts operation of the end is the desired chapter listing
-	if (dex_template.END == dex_template.END_CHAPTER_LIST):
-		return mango_info
-	else:
-		dex_request_chapters(mango_info, chapter_nums, dl_input)
-#end_dex_preview
 
 def no_chap_found():
 	print("No chapters found in selected language")
@@ -426,10 +394,11 @@ def get_chapter_info(ch_data, title):
 	# creates folder path based off chapter title, chapter name and scanlator
 	folder_path = const.DOWNLOAD_PATH + title + "/" + re.sub(r"[\\/:*?\"<>|]", "", "[{}] {}".format(ch_group_name, ch_title)).strip()
 	return [ch_server, ch_quality, ch_hash, ch_page_array, ch_title, folder_path]
+#end_get_chapter_info
 
 def prepare_chapter_download(title, chapter, pickle_info):
 	f.vprint("Fetching chapter info...")
-	res = session.get(Dex.FIND_CHAPTER_ID.format(chapter["id"]))
+	res = session.get(Dex.FIND_CHAPTER_BY_CHAPTER_ID.format(chapter["id"]))
 	res.close()
 
 	if res.ok:
@@ -539,7 +508,7 @@ def login(username, password, two_factor = "", remember = 1):
 
 def quick_search(query):
 	print("Searching for: " + query + "...")
-	res = session.get(Dex.SEARCH.format(quote(query)))
+	res = session.get(Dex.SEARCH_BY_TEXT.format(quote(query)))
 	data = json.loads(res.text)
 
 	results = {}
@@ -562,14 +531,25 @@ def quick_search(query):
 
 # chapters are limited to 100
 def chapters_from_id(title, mango_id):
-	url = Dex.FIND_MANGO_ID.format(mango_id, "en")
+
+	# if title is unspecified, retrieve it
+	if title == "":
+		url = Dex.FIND_MANGO_BY_ID.format(mango_id)
+		res = session.get(url)
+		res.close()
+
+		data = json.loads(res.text)
+		title = data['data']['attributes']['title']['en']
+
+	url = Dex.FIND_CHAPTER_BY_MANGO_ID.format(mango_id, "en")
 	res = session.get(url)
 	res.close()
 
 	data = json.loads(res.text)
+
 	pending_downloads = {"chapters": [], "mango_title": title}
 
-	for i in range(data["total"]):
+	for i in range(data["limit"]):
 		result = data["results"][i]
 		chapter_data = {
 			"chapter": result["data"]["attributes"]["chapter"],
@@ -621,6 +601,7 @@ def create_comment_thread(ajax_id, chapter_id):
 		"type": 3 if (ajax_id == Dex.COMMENT_CHAPTER) else 1, 
 		"type_id": str(chapter_id)
 	})
+	res.close()
 	if res.text == "":
 		f.vprint("Thread created")
 		return True
