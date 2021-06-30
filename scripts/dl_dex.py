@@ -15,12 +15,12 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse, quote
 
-#local libs
+# local libs
 from template import Template
 from functions import Functions
 import constants as const
 
-#session > basic requests
+# session > basic requests
 session = requests.Session()
 
 # type(chapter/manga), chapter/mango id		eg. /api/chapter/12345
@@ -32,22 +32,19 @@ img_format = "{}/{}/{}"
 # type => mango_id = unfollow, 1 = reading/follow, 2 = completed, 3 = on hold, 4 = plan to read, 5 = dropped, 6 = plan to read
 ajax_format = const.DEX + "/ajax/actions.ajax.php?function={}&id={}&type={}&_={}"
 
-#see functions.py
+# see functions.py
 f = Functions()
 
-#callback on response for requests library
+# callback on response for requests library
 session.hooks["response"] = f.res_hook
 
-#setups script with template of generic functions
+# setups script with template of generic functions
 dex_template = Template("Please enter MangoDex URL: ", resume_pickle = "dex_resume", cookies_pickle = "dex_cookies")
 
-#file to keep data saver option
+# file to keep data saver option
 data_saver_pickle = const.PICKLE_PATH + "/dex_saver.pckl"
 
-#needed to do ajax calls with mangodex. haven't tried if other methods work with this header
-ajax_headers = { "X-Requested-With": "XMLHttpRequest" }
-
-#Dex class is mainly for communicating with __main and gui files and keeping constants
+# Dex class is mainly for communicating with __main and gui files and keeping constants
 class Dex:
 	COMMENT_MANGA = "11"
 	COMMENT_CHAPTER = "12"
@@ -57,6 +54,9 @@ class Dex:
 
 	# uses POST passing through username and password in json
 	LOGIN = const.DEX_API + "auth/login"
+
+	# checks login authentication
+	AUTH_CHECK =const.DEX_API + "auth/check"
 
 	# use manga id to get basic info
 	FIND_MANGO_BY_ID = const.DEX_API + "manga/{}"
@@ -78,6 +78,16 @@ class Dex:
 
 	# use chapter id to find server uri
 	FIND_AT_HOME_URL = const.DEX_API + "at-home/server/{}"
+
+	# marks manga reading status by id
+	SET_MANGO_STATUS = const.DEX_API + "manga/{}/status"
+
+	# (un)follows manga by id
+	FOLLOW = const.DEX_API + "manga/{}/follow"
+
+	# mark chapters read/unread by id
+	SET_CHAPTER_READ = const.DEX_API + "chapter/{}/read"
+
 
 	def __init__(self):
 		session.cookies = dex_template.get_pickle(dex_template.cookies_pickle, session.cookies)
@@ -478,7 +488,7 @@ def set_data_saver():
 def login(username, password, two_factor = "", remember = 1):
 	print("Logging in...")
 
-	res = session.post(Dex.LOGIN, headers = ajax_headers, json = { "username": username, "password": password })
+	res = session.post(Dex.LOGIN, json = { "username": username, "password": password })
 	res.close()
 	data = json.loads(res.text)
 
@@ -496,6 +506,9 @@ def login(username, password, two_factor = "", remember = 1):
 			print("Invalid input, defaulting to no :)")
 		session.cookies.set(name = "mark_on_dl", value = mark_on_dl)
 		session.cookies.set(name = "session", value = data["token"]["session"])
+		session.cookies.set(name = "refresh", value = data["token"]["refresh"])
+
+		session.headers.update({ "Authorization": data["token"]["session"] })
 
 		# storing login cookies into pickle file
 		dex_template.update_pickle(dex_template.cookies_pickle, session.cookies)
@@ -541,6 +554,7 @@ def chapters_from_id(title, mango_id):
 		data = json.loads(res.text)
 		title = data['data']['attributes']['title']['en']
 
+	# gets all chapters to download
 	url = Dex.FIND_CHAPTER_BY_MANGO_ID.format(mango_id, "en")
 	res = session.get(url)
 	res.close()
@@ -549,7 +563,7 @@ def chapters_from_id(title, mango_id):
 
 	pending_downloads = {"chapters": [], "mango_title": title}
 
-	for i in range(data["limit"]):
+	for i in range(len(data["results"])):
 		result = data["results"][i]
 		chapter_data = {
 			"chapter": result["data"]["attributes"]["chapter"],
@@ -573,9 +587,10 @@ def random():
 		f.printv("Error with retrieving random mango")
 # end_random
 
+#deprecated since the api refresh
 def dex_ajax_call(action, _id, _type = 1, time = str(math.floor(time.time())), data = {}):
 	url = ajax_format.format(action, _id, _type, time)
-	res = session.get(url, headers = ajax_headers, data = data)
+	res = session.get(url, data = data)
 	res.close()
 
 	if res.ok:
@@ -587,17 +602,50 @@ def dex_ajax_call(action, _id, _type = 1, time = str(math.floor(time.time())), d
 		print(str(res.status_code) + " " + res.text)
 #end_dex_ajax_call
 
+# status is "reading", "on_hold", "plan_to_read", "dropped", "re_reading", "completed"
+def update_reading_status(status, mango_id):
+	url = Dex.SET_MANGO_STATUS.format(mango_id)
+	res = session.post(url, json = { "status": status })
+	res.close()
+
+	data = json.loads(res.text)
+	print("Mango marked as {}".format(status) if data["result"] == "ok" else "Error with status marking")
+#end_update_reading_status
+
+
+# unfollows mango by id
+def unfollow(mango_id):
+	url = Dex.FOLLOW.format(mango_id)
+	res = session.delete(url)
+	res.close()
+
+	data = json.loads(res.text)
+	print("Mango unfollowed successfully" if data["result"] == "ok" else "Error with unfollowing")
+#end_unfollow
+
+
 # action has to be either "read" or "unread"
 def chapter_mark(action, chapter_id):
-	dex_ajax_call("chapter_mark_" + action, chapter_id)
+	url = Dex.SET_CHAPTER_READ.format(chapter_id)
+
+	if action == "read":
+		res = session.post(url)
+	elif action == "unread":
+		res = session.delete(url)
+
+	res.close()
+	
+	print("Chapter marked {}".format(action) if res.ok else "Error with chapter marking")
 #end_chapter_mark
 
+
+# unusable as of new mangadex
 def create_comment_thread(ajax_id, chapter_id):
 	# type = 11 for manga comments, 12 for chapter comments
 	create_thread_uri = "https://mangadex.org/ajax/actions.ajax.php?function=start_empty_thread&id=" + ajax_id
 
 	#type value = 1 for manga thread, 3 for chapter thread.
-	res = session.post(create_thread_uri, headers = ajax_headers, data = {
+	res = session.post(create_thread_uri, data = {
 		"type": 3 if (ajax_id == Dex.COMMENT_CHAPTER) else 1, 
 		"type_id": str(chapter_id)
 	})
@@ -608,6 +656,7 @@ def create_comment_thread(ajax_id, chapter_id):
 	return False
 #end_create_comment_thread
 
+# unusable as of new mangadex
 def comment(ajax_id, _id, text):
 	url = Dex.SITE
 	# flag = 11 for manga, 12 for chapter
@@ -658,7 +707,7 @@ def comment(ajax_id, _id, text):
 		js = js[key_start + len("url: '"):]
 		reply_path = js[0:js.find("'")]
 		reply_uri = Dex.SITE + reply_path
-		res = session.post(reply_uri, headers = ajax_headers, data = data)
+		res = session.post(reply_uri, data = data)
 		if res.ok and res.text == "":
 			print("Comment successfully posted")
 			return
@@ -713,6 +762,16 @@ def set_language(lang = "idk_fam", default = False):
 #actual cancer to format out
 def check_args():
 	manga_status_list = ["u", "f", "c", "h", "p", "d", "r"]
+	manga_status_json = {
+		"u_func": "unfollow",
+		"f_func": "reading",
+		"c_func": "completed",
+		"h_func": "on_hold",
+		"p_func": "plan_to_read",
+		"d_func": "dropped",
+		"r_func": "re_reading"
+	}
+
 	# sets max length of printout 100 chars
 	parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=100))
 	parser.add_argument("-V", "--verbose", action="store_true", dest="verbose", help="Increase output verbosity")
@@ -763,28 +822,37 @@ def check_args():
 			# exits after running single use functions except for verbose
 			exit_after_running = True
 
-			# download
 			if arg == "lang":
 				set_language(val)
+
 			if arg == "qsearch":
 				dex_template.END = dex_template.END_DOWNLOAD
 				quick_search(val)
+
 			if arg == "url":
 				dex_template.END = dex_template.END_DOWNLOAD
 				dex_parse(val)
+
 			if arg == "login_data":
 				# the * is to spread the list into the method
 				login(*val)
+
+			# if it's any of the manga status arguments ie: (follow, dropped, completed)
 			elif arg.split("_")[0] in manga_status_list:
 				_type = manga_status_list.index(arg[0])
 				if _type == 0:
-					dex_ajax_call("manga_unfollow", val, val)
+					unfollow(val)
 				else:
-					dex_ajax_call("manga_follow", val, _type)
+					update_reading_status(manga_status_json[arg], val)
+					#dex_ajax_call("manga_follow", val, _type)
+
 			elif arg[0:7] == "cm_mnga":
 				comment(Dex.COMMENT_MANGA, val[0], val[1])
+
 			elif arg[0:7] == "cm_chpt":
 				comment(Dex.COMMENT_CHAPTER ,val[0], val[1])
+
+			# marking read/unread
 			elif arg[0:2] == "mr" or arg[0:2] == "mu":
 				mark = "read" if arg[0:2] == "mr" else "unread"
 				chapter_mark(mark, val)
@@ -806,6 +874,10 @@ if __name__ == "__main__":
 
 	# checks if session cookies exist
 	session.cookies = dex_template.get_pickle(dex_template.cookies_pickle, session.cookies)
+
+	# adds login JWT to session headers if it exists
+	if session.cookies.get("session"):
+		session.headers.update({ "Authorization": session.cookies.get("session") })
 
 	# runs through list of preset arguments
 	check_args()
