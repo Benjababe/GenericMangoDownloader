@@ -32,5 +32,13 @@ downloads
 *.zip
 .vscode/.ropeproject/*
 .DS_Store
-scripts/pickles/lang.txt
-scripts/pickles/pickle_editor.py
+data.pickle
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

@@ -1,10 +1,11 @@
 import asyncio
-from classes import Chapter, Extension
 import cfscrape
 import os
 import re
 import requests
 from concurrent.futures import ThreadPoolExecutor
+
+from classes import Chapter, Extension
 
 DOWNLOAD_PATH = "./downloads/"
 
