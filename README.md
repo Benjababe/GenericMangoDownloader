@@ -1,3 +1,7 @@
+|Build|
+|-----|
+|[![CI](https://github.com/Benjababe/NotCafeDownloader/workflows/CI/badge.svg?event=push)](https://github.com/Benjababe/NotCafeDownloader/actions/workflows/main.yml)|
+
 # NotCafeDownloader
 
 Initially only intended for cafe. Kinda expanded on its own and cafe sorta died.
