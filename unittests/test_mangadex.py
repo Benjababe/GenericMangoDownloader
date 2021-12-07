@@ -1,4 +1,5 @@
 import json
+import requests
 import unittest
 
 import misc
@@ -17,6 +18,10 @@ class TestExtension(unittest.TestCase):
         self.API_URL = "https://api.mangadex.org"
         self.manga_id = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         self.chapter_id = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
+
+        if self.session == None:
+            self.session = requests.Session()
+
         return super().setUp()
 
     def test_parse_url(self):
@@ -121,6 +126,10 @@ class TestAccount(unittest.TestCase):
     def setUp(self) -> None:
         # reads login session for every test in this class
         self.session = misc.read_pickle("mangadex", "session")
+
+        if self.session == None:
+            self.session = requests.Session()
+
         return super().setUp()
 
     def test_login(self):
