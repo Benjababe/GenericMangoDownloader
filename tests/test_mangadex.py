@@ -40,12 +40,13 @@ class TestExtension(unittest.TestCase):
     # end_test_parse
 
     def test_search(self):
-        QUERY = "Umineko Tsubasa"
-        res = self.mangadex.search(QUERY, 1)
+        query = "Umineko Tsubasa"
+        res = self.mangadex.search(query, 1)
 
-        # checks all items in manga_list is a Manga object
-        allManga = all(isinstance(manga, Manga) for manga in res["manga_list"])
-        self.assertTrue(allManga)
+        # checks all items in manga_list is a Manga object and attributes are populated
+        all_manga = all(isinstance(manga, Manga) and
+                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
+        self.assertTrue(all_manga)
 
         # checks last_page value is a boolean
         self.assertTrue(isinstance(res["last_page"], bool))
@@ -59,8 +60,8 @@ class TestExtension(unittest.TestCase):
         manga = self.mangadex.get_manga_info(manga)
 
         # checks all items in 'chapters' key is a Chapter object
-        allChapters = all(isinstance(item, Chapter)
-                          for item in manga.chapters)
+        allChapters = all(isinstance(chapter, Chapter)
+                          for chapter in manga.chapters)
 
         # checks all items in 'tags' key is a Tag object
         allTags = all(isinstance(tag, Tag) for tag in manga.tags)

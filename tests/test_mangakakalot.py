@@ -1,13 +1,11 @@
-import json
 import unittest
 
 import misc
 import extensions.mangakakalot.ext as mangakakalotExt
 from classes import Chapter, Manga, Tag
 
+
 # testing methods defined in Mangakakalot class
-
-
 class TestExtension(unittest.TestCase):
 
     # variables used in test cases
@@ -16,12 +14,13 @@ class TestExtension(unittest.TestCase):
         return super().setUp()
 
     def test_search(self):
-        QUERY = "Umineko Tsubasa"
-        res = self.mangakakalot.search(QUERY, 1)
+        query = "Umineko Tsubasa"
+        res = self.mangakakalot.search(query, 1)
 
         # checks all items in manga_list is a Manga object
-        allManga = all(isinstance(manga, Manga) for manga in res["manga_list"])
-        self.assertTrue(allManga)
+        all_manga = all(isinstance(manga, Manga) and
+                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
+        self.assertTrue(all_manga and isinstance(res["last_page"], bool))
 
         # checks last_page value is a boolean
         self.assertTrue(isinstance(res["last_page"], bool))
