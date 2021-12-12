@@ -1,7 +1,9 @@
 import json
+import os
 import requests
 import unittest
 
+import download
 import misc
 import extensions.mangadex.account as account
 import extensions.mangadex.ext as mangadexExt
@@ -97,6 +99,47 @@ class TestExtension(unittest.TestCase):
     # end_test_get_scanlator
 
     def test_pre_download(self):
+        # Chapter object that has been processed with pre_download
+        chapter = self.get_chapter()
+
+        # ensures all page_urls are valid
+        check = all(misc.is_url(url) for url in chapter.page_urls)
+        self.assertTrue(check)
+    # end_test_pre_download
+
+    def test_download(self):
+        DOWNLOAD_PATH = "./downloads/unittest"
+
+        # get chapter with all information needed to download
+        chapter = self.get_chapter()
+
+        # downloads only 1 page to sample
+        page = chapter.page_urls[0]
+        download.download_page(page, DOWNLOAD_PATH, 1)
+
+        # gets filesize of page
+        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+
+        self.assertEqual(size, 290716)
+
+        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        os.rmdir(DOWNLOAD_PATH)
+    # end_test_download
+
+    def test_get_formatted_date(self):
+        DATETIME = "2018-04-11T20:23:32+00:00"
+        date = mangadexExt.get_formatted_date(DATETIME)
+
+        self.assertEquals(date, "11/04/2018")
+    # end_test_get_formatted_date
+
+    def get_chapter(self) -> Chapter:
+        """ Helper method for retrieving an attribute-populated Chapter object
+
+        Returns:
+            Chapter: Populated Chapter object
+        """
+
         chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
         res = self.session.get(chapter_list_url)
 
@@ -105,19 +148,8 @@ class TestExtension(unittest.TestCase):
 
         chapter = self.mangadex.get_chapter(data)
         chapter = self.mangadex.pre_download(chapter)
-
-        # ensures all page_urls are valid
-        check = all(misc.is_url(url) for url in chapter.page_urls)
-        self.assertTrue(check)
-
-    # end_test_pre_download
-
-    def test_get_formatted_date(self):
-        DATETIME = "2018-04-11T20:23:32+00:00"
-        date = mangadexExt.get_formatted_date(DATETIME)
-
-        self.assertEquals(date, "11/04/2018")
-    # end_test_get_formatted_date
+        return chapter
+    # end_get_chapter
 
 # end_TestExtension
 

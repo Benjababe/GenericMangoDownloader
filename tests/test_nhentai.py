@@ -1,6 +1,7 @@
+import os
 import unittest
 
-import misc
+import download
 import extensions.nhentai.ext as nhentai
 from classes import Chapter, Manga, Tag
 
@@ -24,11 +25,7 @@ class TestExtension(unittest.TestCase):
     # end_test_search
 
     def test_get_manga_info(self):
-        manga = Manga()
-        manga.title = "(C78) The World My Little Sister Only Knows 2 (Umineko no Naku Koro ni)"
-        manga.id = "333998"
-
-        manga = self.nhentai.get_manga_info(manga)
+        manga = self.get_manga()
 
         # checks all items in 'chapters' key is a Chapter object
         allChapters = all(isinstance(chapter, Chapter)
@@ -39,6 +36,41 @@ class TestExtension(unittest.TestCase):
 
         self.assertTrue(allChapters and allTags)
     # end_test_get_manga_info
+
+    def test_download(self):
+        DOWNLOAD_PATH = "./downloads/unittest"
+
+        # retrieves chapter with all information needed to download
+        manga = self.get_manga()
+        chapter = manga.chapters[0]
+
+        # downloads only 1 page to sample
+        page = chapter.page_urls[0]
+        download.download_page(page, DOWNLOAD_PATH, 1)
+
+        # gets filesize of page
+        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+
+        self.assertEqual(size, 394241)
+
+        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        os.rmdir(DOWNLOAD_PATH)
+    # end_test_download
+
+    def get_manga(self) -> Manga:
+        """ Helper method for retrieving an attribute-populated Manga object
+
+        Returns:
+            Manga: Populated Manga object
+        """
+
+        manga = Manga()
+        manga.title = "(C78) The World My Little Sister Only Knows 2 (Umineko no Naku Koro ni)"
+        manga.id = "333998"
+
+        manga = self.nhentai.get_manga_info(manga)
+        return manga
+    # end_get_manga
 
     def test_get_formatted_date(self):
         date = "2020-10-27T01:13:39.218505+00:00"

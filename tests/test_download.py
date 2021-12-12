@@ -13,7 +13,7 @@ class TestDownload(unittest.TestCase):
     # end_setUp
 
     def test_single_download(self):
-        download.download_page(self.URL, self.PATH, 1, "")
+        download.download_page(self.URL, self.PATH, 1)
         check = os.path.exists(f"{self.PATH}/1.jpg")
         self.assertTrue(check)
     # end_test_single_download

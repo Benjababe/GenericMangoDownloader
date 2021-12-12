@@ -1,5 +1,7 @@
+import os
 import unittest
 
+import download
 import misc
 import extensions.mangakakalot.ext as mangakakalotExt
 from classes import Chapter, Manga, Tag
@@ -58,6 +60,32 @@ class TestExtension(unittest.TestCase):
         self.assertTrue(page_check)
     # end_test_pre_download
 
+    def test_download(self):
+        DOWNLOAD_PATH = "./downloads/unittest"
+
+        manga = Manga()
+        manga.id = "https://mangakakalot.com/manga/umineko_no_naku_koro_ni_tsubasa"
+        manga = self.mangakakalot.get_manga_info(manga)
+
+        # downloads only 1 chapter
+        chapter = list(filter(lambda x: x.number == '1', manga.chapters))[0]
+        chapter = self.mangakakalot.pre_download(chapter)
+
+        # downloads only 1 page from that chapter
+        page = chapter.page_urls[0]
+        cf = chapter.cloudflare
+        headers = chapter.headers
+        download.download_page(page, DOWNLOAD_PATH, 1,
+                               cloudflare=cf, headers=headers)
+
+        # gets filesize of page
+        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+
+        self.assertEqual(size, 130200)
+
+        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        os.rmdir(DOWNLOAD_PATH)
+    # end_test_download
 
 # end_TestExtension
 
