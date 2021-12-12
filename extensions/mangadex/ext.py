@@ -1,11 +1,14 @@
 # standard libraries
 import json
+from typing import Dict
 import requests
 from datetime import datetime
 
 # local files
 from classes import Chapter, Extension, Manga, Tag
 import extensions.mangadex.account as account
+import extensions.mangadex.search as search
+import extensions.mangadex.parse as parse
 import misc
 
 API_URL = "https://api.mangadex.org"
@@ -32,114 +35,16 @@ class Mangadex(Extension):
     mark_on_dl = stored_mark if stored_mark else False
 
     def parse_url(self, url: str):
-        MANGA_TEMPLATE = "https://mangadex.org/title/"
-        CHAPTER_TEMPLATE = "https://mangadex.org/chapter/"
-
-        if MANGA_TEMPLATE in url and url.index(MANGA_TEMPLATE) == 0:
-            manga_id = url.replace(MANGA_TEMPLATE, "")
-            return self.parse_url_manga(manga_id)
-
-        elif CHAPTER_TEMPLATE in url and url.index(CHAPTER_TEMPLATE) == 0:
-            chapter_id = url.replace(CHAPTER_TEMPLATE, "").split("/")[0]
-            return self.parse_url_chapter(chapter_id)
-
+        return parse.parse_url(self, url)
     # end_parse_url
 
-    def parse_url_manga(self, manga_id: str) -> dict:
-        manga_info_url = f"{API_URL}/manga/{manga_id}"
-
-        res = self.session.get(manga_info_url)
-        res.close()
-        data = json.loads(res.text)
-
-        manga = Manga()
-        manga.title = data["data"]["attributes"]["title"][self.language]
-        manga.id = manga_id
-
-        return {
-            "type": "manga",
-            "item": manga
-        }
-    # end_parse_url_manga
-
-    def parse_url_chapter(self, chapter_id: str) -> dict:
-        chapter_info_url = f"{API_URL}/chapter/{chapter_id}"
-
-        res = self.session.get(chapter_info_url)
-        res.close()
-        data = json.loads(res.text)
-
-        chapter = Chapter(pre_download=True)
-
-        chapter.id = chapter_id
-        chapter.title = data["data"]["attributes"]["title"]
-        chapter.number = data["data"]["attributes"]["chapter"]
-        chapter.page_urls = data["data"]["attributes"]["dataSaver" if self.data_saver else "data"]
-        chapter.scanlator = self.get_scanlator(data["data"]["relationships"])
-        chapter.add_attribute("hash", data["data"]["attributes"]["hash"])
-
-        for rel in data["data"]["relationships"]:
-            if rel["type"] == "manga":
-                manga_info_url = f"{API_URL}/manga/{rel['id']}"
-                chapter_lang = data["data"]["attributes"]["translatedLanguage"]
-
-                res = self.session.get(manga_info_url)
-                res.close()
-                data = json.loads(res.text)
-
-                chapter.manga_title = data["data"]["attributes"]["title"][chapter_lang]
-                chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
-
-        return {
-            "type": "chapter",
-            "item": chapter
-        }
-    # end_parse_url_chapter
-
-    def search(self, query: str, page: int, cover: bool = False):
-        search_len = 10
-        search_url = f"{API_URL}/manga?title={query}&limit={search_len}&offset={(page-1) * search_len}"
-
-        res = self.session.get(search_url)
-        res.close()
-        data = json.loads(res.text)
-
-        # only reaches last page of search result when chapter offset + chapter displayed is greater of equals total search results
-        last_page = (len(data["data"]) + data["offset"]) >= data["total"]
-
-        manga_list = []
-
-        # populate the returned list
-        for item in data["data"]:
-            manga = Manga()
-
-            manga.title = item["attributes"]["title"][self.language]
-            manga.id = item["id"]
-
-            # retrieves front cover URL
-            if cover:
-                for rel in item["relationships"]:
-                    if rel["type"] == "cover_art":
-                        cover_id = rel["id"]
-                        cover_url = f"{API_URL}/cover/{cover_id}"
-
-                        res = self.session.get(cover_url)
-                        res.close()
-
-                        cover_data = json.loads(res.text)
-                        cover_filename = cover_data["data"]["attributes"]["fileName"]
-                        manga.cover_url = f"https://uploads.mangadex.org/covers/{manga.id}/{cover_filename}"
-                    # end_if
-                # end_for
-            # end_if
-            manga_list.append(manga)
-
-        return {"manga_list": manga_list, "last_page": last_page}
+    def search(self, query: str, page: int, cover: bool = False) -> Dict:
+        return search.search(self, query, page, cover)
     # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:
         manga_info_url = f"{API_URL}/manga/{manga.id}"
-        chapter_list_url = f"{API_URL}/chapter/?manga={manga.id}&limit=100&translatedLanguage[]={self.language}"
+        chapter_list_url = f"{API_URL}/chapter"
 
         res = self.session.get(manga_info_url)
         res.close()
@@ -150,12 +55,15 @@ class Mangadex(Extension):
         tags = []
 
         for tag in data["data"]["attributes"]["tags"]:
-            tags.append(Tag(
-                tag["attributes"]["name"]["en"],
-                tag["id"]
-            ))
+            name = tag["attributes"]["name"][self.language]
+            id = tag["id"]
+            tags.append(Tag(name, id))
 
-        res = self.session.get(chapter_list_url)
+        res = self.session.get(chapter_list_url, params={
+            "manga": manga.id,
+            "limit": 100,
+            "translatedLanguage[]": self.language
+        })
         res.close()
         data = json.loads(res.text)
 
