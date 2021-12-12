@@ -1,7 +1,7 @@
 # standard libraries
 import argparse
-from classes import Manga
 import sys
+from classes import Manga
 
 # local files
 import download
