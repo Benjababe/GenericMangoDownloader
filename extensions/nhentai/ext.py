@@ -18,6 +18,23 @@ class NHentai(Extension):
 
     def parse_url(self, query: str) -> dict:
         return super().parse_url(query)
+    # end_parse_url
+
+    def parse_gallery(self, url):
+        res = self.session.get(url)
+        res.close()
+        soup = BeautifulSoup(res.text, "html.parser")
+
+        manga = Manga()
+        id_regex = r"https:\/\/nhentai.net\/g\/([0-9]*)\/"
+        manga.title = soup.find("span", "pretty").text.strip()
+        manga.id = re.search(id_regex, res.url).group(1)
+
+        return {
+            "type": "manga",
+            "item": manga
+        }
+    # end_parse_gallery
 
     def search(self, query: str, page: int, cover: bool = False):
         search_url = f"https://nhentai.net/search/?q={query}+language%3Aenglish&page={page}"
@@ -110,6 +127,14 @@ class NHentai(Extension):
 
         return manga
     # end_get_manga_info
+
+    def get_random(self):
+        res = self.session.get("https://nhentai.net/random/")
+        res.close()
+
+        manga = self.parse_gallery(res.url)
+        return manga["item"]
+    # end_get_random
 
     def arg_handler(self, args: List[str]):
         # pairs argument with its corresponding function

@@ -116,6 +116,19 @@ class Extension(ABC):
             "get_manga_info method has not been implemented")
 
     @abstractmethod
+    def get_random(self) -> Manga:
+        """Retrieves Manga object from extension's website
+
+        Raises:
+            NotImplementedError: When method isn't implemented by the subclass
+
+        Returns:
+            Manga: Random Manga object
+        """
+
+        raise NotImplementedError("get_random method has not been implemented")
+
+    @abstractmethod
     def arg_handler(self, args: List[str]):
         """Handling of custom arguments
 

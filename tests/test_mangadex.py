@@ -74,6 +74,7 @@ class TestExtension(unittest.TestCase):
     def test_get_chapter(self):
         chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
         res = self.session.get(chapter_list_url)
+        res.close()
 
         data = json.loads(res.text)
         data = data["data"][0]
@@ -90,6 +91,7 @@ class TestExtension(unittest.TestCase):
     def test_get_scanlator(self):
         chapter_list_url = f"{self.API_URL}/chapter/{self.chapter_id}"
         res = self.session.get(chapter_list_url)
+        res.close()
 
         data = json.loads(res.text)
         scanlator = self.mangadex.get_scanlator(data["data"]["relationships"])
@@ -142,6 +144,7 @@ class TestExtension(unittest.TestCase):
 
         chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
         res = self.session.get(chapter_list_url)
+        res.close()
 
         data = json.loads(res.text)
         data = data["data"][0]

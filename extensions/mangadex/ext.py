@@ -105,7 +105,7 @@ class Mangadex(Extension):
         for item in data["data"]:
             manga = Manga()
 
-            manga.title = item["attributes"]["title"]["en"]
+            manga.title = item["attributes"]["title"][self.language]
             manga.id = item["id"]
 
             # retrieves front cover URL
@@ -251,6 +251,18 @@ class Mangadex(Extension):
 
         return chapter
     # end_pre_download
+
+    def get_random(self):
+        res = self.session.get(f"{API_URL}/manga/random")
+        res.close()
+        data = json.loads(res.text)
+
+        manga = Manga()
+        manga.title = data["data"]["attributes"]["title"][self.language]
+        manga.id = data["data"]["id"]
+
+        return manga
+    # end_get_random
 
     def arg_handler(self, args: list) -> None:
         # pairs argument with its corresponding function

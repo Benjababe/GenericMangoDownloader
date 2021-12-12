@@ -7,6 +7,7 @@ from classes import Manga
 import download
 import misc
 from manga_info import get_manga_info
+from random_manga import random_manga
 from search import search
 
 # extensions
@@ -68,6 +69,16 @@ def main_search(query: str):
 # end_main_search
 
 
+def main_random():
+    global ext_active
+
+    manga = random_manga(ext_active)
+
+    if manga:
+        main_get_manga_info(manga)
+# end_main_random
+
+
 def main_get_manga_info(manga: Manga):
     """Gets chapters available for download and proceeds to downloading them
 
@@ -98,6 +109,9 @@ parser.add_argument("--nhentai", action="store_true",
 # standardised functions for every extension
 parser.add_argument("-S", "--search", metavar="query", dest="search",
                     help="Calls the search function of the active extension")
+
+parser.add_argument("-R", "--random", action="store_true", dest="random",
+                    help="Finds a random manga")
 
 parser.add_argument("-U", "--url", metavar="url", dest="parse_url",
                     help="Retrieves manga/chapter directly from a provided URL")
@@ -142,6 +156,10 @@ def parse_arguments():
             elif arg == "search":
                 check_extension()
                 main_search(val)
+
+            elif arg == "random":
+                check_extension()
+                main_random()
 
             elif arg == "parse_url":
                 check_extension()

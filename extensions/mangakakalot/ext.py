@@ -160,6 +160,10 @@ class Mangakakalot(Extension):
         return chapter
     # end_pre_download
 
+    def get_random(self):
+        return
+    # end_get_random
+
     def arg_handler(self, args: List[str]):
         return
     # end_arg_handler
