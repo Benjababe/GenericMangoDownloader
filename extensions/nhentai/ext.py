@@ -139,14 +139,18 @@ class NHentai(Extension):
     def arg_handler(self, args: List[str]):
         # pairs argument with its corresponding function
         arg_handlers = {
-            "--login": account.login,
+            "-LS": account.login,
+            "--login-session": account.login,
+            "-F": gallery.favourite,
             "--favorite": gallery.favourite,
             "--favourite": gallery.favourite,
-            "--comment": gallery.comment
+            "-CM": gallery.comment,
+            "--comment": gallery.comment,
+            "--undo-comment": gallery.undo_comment
         }
 
         for arg in args:
-            arg = arg.split(" ")
+            arg = arg.strip().split(" ")
 
             if arg[0] in arg_handlers:
                 arg_handlers[arg.pop(0)](self.session, *arg)
