@@ -128,6 +128,13 @@ class TestExtension(unittest.TestCase):
         os.rmdir(DOWNLOAD_PATH)
     # end_test_download
 
+    def test_get_random(self):
+        manga = self.mangadex.get_random()
+
+        self.assertIsNotNone(manga.title)
+        self.assertIsNotNone(manga.id)
+    # end_test_get_random
+
     def test_get_formatted_date(self):
         DATETIME = "2018-04-11T20:23:32+00:00"
         date = mangadexExt.get_formatted_date(DATETIME)

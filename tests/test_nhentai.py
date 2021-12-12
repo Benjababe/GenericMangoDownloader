@@ -57,6 +57,19 @@ class TestExtension(unittest.TestCase):
         os.rmdir(DOWNLOAD_PATH)
     # end_test_download
 
+    def test_get_random(self):
+        manga = self.nhentai.get_random()
+
+        self.assertIsNotNone(manga.title)
+        self.assertIsNotNone(manga.id)
+    # end_test_get_random
+
+    def test_get_formatted_date(self):
+        date = "2020-10-27T01:13:39.218505+00:00"
+        date = nhentai.get_formatted_date(date)
+        self.assertEqual(date, "27/10/2020")
+    # end_test_get_formatted_date
+
     def get_manga(self) -> Manga:
         """ Helper method for retrieving an attribute-populated Manga object
 
@@ -71,11 +84,5 @@ class TestExtension(unittest.TestCase):
         manga = self.nhentai.get_manga_info(manga)
         return manga
     # end_get_manga
-
-    def test_get_formatted_date(self):
-        date = "2020-10-27T01:13:39.218505+00:00"
-        date = nhentai.get_formatted_date(date)
-        self.assertEqual(date, "27/10/2020")
-    # end_test_get_formatted_date
 
 # end_TestExtension
