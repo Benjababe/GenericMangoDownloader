@@ -55,6 +55,10 @@ async def download_chapter_async(chapter: Chapter):
 
         for i in range(len(chapter.page_urls)):
             dl_print = f"{chapter.manga_title}: Chapter {chapter.number} page {i} download complete"
+
+            if not os.path.exists(chapter_path):
+                os.makedirs(chapter_path)
+
             tasks.append(
                 loop.run_in_executor(
                     executor,
