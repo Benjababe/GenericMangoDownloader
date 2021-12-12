@@ -30,13 +30,13 @@ def check_pickle(ext: str):
 # end_check_pickle
 
 
-def write_pickle(ext: str, key: str, value: str):
+def write_pickle(ext: str, key: str, value):
     """Writes pickle data for extension
 
     Args:
         ext (str): Name of manga extension
         key (str): Key for data
-        value (str): Data to be saved
+        value: Data to be saved
     """
 
     check_pickle(ext)
@@ -53,7 +53,7 @@ def write_pickle(ext: str, key: str, value: str):
 # end_write_pickle
 
 
-def read_pickle(ext: str, key: str) -> str:
+def read_pickle(ext: str, key: str):
     """Reads pickle data for extension
 
     Args:

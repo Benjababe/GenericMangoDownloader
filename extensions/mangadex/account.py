@@ -6,17 +6,21 @@ import misc
 API_URL = "https://api.mangadex.org"
 
 
-def login(session: requests.Session, username: str, password: str = "", mark_on_dl: str = ""):
+def login(session: requests.Session, username: str = "", password: str = "", mark_on_dl: str = ""):
     """Logs into MangaDex and saves the login session
 
     Args:
         session (requests.Session): Session object used for HTTP requests
-        username (str): Login username
+        username (str): Login username. Defaults to "".
         password (str, optional): Login password. Defaults to "".
         mark_on_dl (str, optional): String to indicate whether to mark chapter as read on download. Defaults to "".
     """
 
-    print("Logging in as", username)
+    if username == "":
+        username = input("Enter your username: ")
+
+    else:
+        print("Logging in as", username)
 
     if password == "":
         password = input("Enter your password: ")
@@ -56,6 +60,21 @@ def login(session: requests.Session, username: str, password: str = "", mark_on_
 # end_login
 
 
+def toggle_data_saver(session: requests.Session):
+    data_saver = misc.read_pickle("mangadex", "data_saver")
+    data_saver = not data_saver
+    misc.write_pickle("mangadex", "data_saver", data_saver)
+
+    print(f"Data saver set to: {data_saver}")
+# end_data_saver
+
+
+def set_language(session: requests.Session, language: str):
+    misc.write_pickle("mangadex", "language", language)
+    print(f"Language set to: {language}")
+# end_set_language
+
+
 def mark_chapter_read(session: requests.Session, chapter_id: str) -> bool:
     """Marks chapter as read by chapter_id parameter given
 
@@ -70,6 +89,10 @@ def mark_chapter_read(session: requests.Session, chapter_id: str) -> bool:
     mark_url = f"{API_URL}/chapter/{chapter_id}/read"
     res = session.post(mark_url)
     res.close()
+
+    if res.ok:
+        print("Chapter marked read")
+
     return res.ok
 # end_mark_chapter
 
@@ -88,6 +111,10 @@ def mark_chapter_unread(session: requests.Session, chapter_id: str) -> bool:
     mark_url = f"{API_URL}/chapter/{chapter_id}/read"
     res = session.delete(mark_url)
     res.close()
+
+    if res.ok:
+        print("Chapter marked unread")
+
     return res.ok
 # end_mark_chapter
 

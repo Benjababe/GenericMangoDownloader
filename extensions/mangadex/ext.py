@@ -13,10 +13,18 @@ API_URL = "https://api.mangadex.org"
 
 class Mangadex(Extension):
     scanlators = {}
-    language = "en"
-    data_saver = True
 
     # initialises pickled variables
+    language = misc.read_pickle("mangadex", "language")
+    if language == None:
+        language = "en"
+        misc.write_pickle("mangadex", "language", language)
+
+    data_saver = misc.read_pickle("mangadex", "data_saver")
+    if data_saver == None:
+        data_saver = True
+        misc.write_pickle("mangadex", "data_saver", data_saver)
+
     stored_session = misc.read_pickle("mangadex", "session")
     session = stored_session if stored_session else requests.Session()
 
@@ -267,8 +275,16 @@ class Mangadex(Extension):
     def arg_handler(self, args: list) -> None:
         # pairs argument with its corresponding function
         arg_handlers = {
+            "-L": account.login,
             "--login": account.login,
+            "-DS": account.toggle_data_saver,
+            "--data-saver": account.toggle_data_saver,
+            "-LANG": account.set_language,
+            "--language": account.set_language,
+            "-MR": account.mark_chapter_read,
             "--mark-read": account.mark_chapter_read,
+            "-MU": account.mark_chapter_unread,
+            "--mark-unread": account.mark_chapter_unread,
             "--reading-status": account.update_reading_status
         }
 
@@ -277,7 +293,7 @@ class Mangadex(Extension):
 
             if arg[0] in arg_handlers:
                 arg_handlers[arg.pop(0)](self.session, *arg)
-    # end_arg_handler
+# end_arg_handler
 # end_Mangadex_class
 
 

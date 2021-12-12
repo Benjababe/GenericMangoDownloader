@@ -110,7 +110,7 @@ parser.add_argument("--nhentai", action="store_true",
 parser.add_argument("-S", "--search", metavar="query", dest="search",
                     help="Calls the search function of the active extension")
 
-parser.add_argument("-R", "--random", action="store_true", dest="random",
+parser.add_argument("-RD", "--random", action="store_true", dest="random",
                     help="Finds a random manga")
 
 parser.add_argument("-U", "--url", metavar="url", dest="parse_url",
@@ -150,14 +150,14 @@ def parse_arguments():
                 # ensures pickle has key for active extension
                 misc.check_pickle(arg)
                 ext_active = ext_dict[arg]
-                ext_active.arg_handler(unknown_args)
+                # ext_active.arg_handler(unknown_args)
 
             # catch and runs standardised functions
             elif arg == "search":
                 check_extension()
                 main_search(val)
 
-            elif arg == "random":
+            elif arg == "random" and val == True:
                 check_extension()
                 main_random()
 
