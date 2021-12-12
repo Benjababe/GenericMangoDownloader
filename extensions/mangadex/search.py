@@ -7,11 +7,11 @@ from classes import Manga, Tag
 API_URL = "https://api.mangadex.org"
 
 
-def search(self, query: str, page: int, cover: bool = False) -> Dict:
+def search(self, query: str, page: int, cover: bool = False, tag: bool = False) -> Dict:
     search_len = 10
     search_url = f"{API_URL}/manga"
 
-    search_tags = query_tags(self.session)
+    search_tags = query_tags(self.session) if tag else []
 
     res = self.session.get(search_url, params={
         "title": query,

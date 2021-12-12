@@ -24,6 +24,15 @@ def parse_url(self, url: str):
 
 
 def parse_url_manga(self, manga_id: str) -> dict:
+    """Parses manga url string and returns dict for type manga
+
+    Args:
+        manga_id (str): Manga ID
+
+    Returns:
+        dict: Dict for type manga
+    """
+
     manga_info_url = f"{API_URL}/manga/{manga_id}"
 
     res = self.session.get(manga_info_url)
@@ -42,6 +51,15 @@ def parse_url_manga(self, manga_id: str) -> dict:
 
 
 def parse_url_chapter(self, chapter_id: str) -> dict:
+    """Parses chapter url string and returns dict for type chapter
+
+    Args:
+        chapter_id (str): Chapter ID
+
+    Returns:
+        dict: Dict for type chapter
+    """
+
     chapter_info_url = f"{API_URL}/chapter/{chapter_id}"
 
     res = self.session.get(chapter_info_url)
