@@ -43,7 +43,7 @@ class TestExtension(unittest.TestCase):
 
     def test_search(self):
         query = "Umineko Tsubasa"
-        res = self.mangadex.search(query, 1, tag=False)
+        res = self.mangadex.search(query, 1, prompt_tag=False)
 
         # checks all items in manga_list is a Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and

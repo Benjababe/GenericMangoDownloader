@@ -11,8 +11,9 @@ def check_pickle(ext: str):
     Args:
         ext (str): Name of manga extension
     """
+
+    # creates pickle file if it doesn't exist and stores an empty dict in it
     if not os.path.exists(DATA_FILE):
-        # writes an empty pickle file
         f = open(DATA_FILE, "wb")
         pickle.dump({}, f)
         f.close()

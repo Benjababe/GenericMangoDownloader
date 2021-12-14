@@ -3,6 +3,11 @@ from typing import List
 
 
 class Manga():
+    """
+    This is the basic Manga class to be used to obtain chapters.
+    Any attributes not included can be added via the extension itself with add_attribute.
+    """
+
     def __init__(self):
         """Constructor for Manga class
 
@@ -16,22 +21,15 @@ class Manga():
 
     def add_attribute(self, name: str, value: str):
         setattr(self, name, value)
-
-
-class Tag():
-    def __init__(self, name: str, id: str):
-        """Constructor for Tag class
-
-        Args:
-            name (str): Name of tag
-            id (str): ID of tag
-        """
-
-        self.name = name
-        self.id = id
+# end_Manga
 
 
 class Chapter():
+    """
+    This is the basic Chapter class to be used for downloading
+    Any attributes not included can be added via the extension itself with add_attribute
+    """
+
     def __init__(self, pre_download: bool):
         """Constructor for Chapter class
 
@@ -54,10 +52,39 @@ class Chapter():
         self.cloudflare = False
 
     def add_attribute(self, name: str, value: str):
+        """Allow for additional attributes to be added to Chapter object upon extension's needs
+
+        Args:
+            name (str): Name of new attribute
+            value (str): Value of new attribute
+        """
         setattr(self, name, value)
+# end_Chapter
+
+
+class Tag():
+    """This is the basic Tag class for manga tags, could be used for a GUI in the future
+    """
+
+    def __init__(self, name: str, id: str):
+        """Constructor for Tag class
+
+        Args:
+            name (str): Name of tag
+            id (str): ID of tag
+        """
+
+        self.name = name
+        self.id = id
+# end_Tag
 
 
 class Extension(ABC):
+    """ 
+    This will be the parent class of all extensions for this program
+    Ensure all methods that can be implemented are done so
+    """
+
     @abstractmethod
     def parse_url(self, query: str) -> dict:
         """Checks URL string whether it is a manga or chapter page
@@ -141,3 +168,4 @@ class Extension(ABC):
 
         raise NotImplementedError(
             "arg_handler method has not been implemented")
+# end_Extension

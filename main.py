@@ -18,9 +18,9 @@ import extensions.nhentai.ext as nhentaiExt
 
 # to match the object via string
 ext_dict = {
-    "mangadex": mangadexExt.Mangadex(),
-    "mangakakalot": mangakakalotExt.Mangakakalot(),
-    "nhentai": nhentaiExt.NHentai()
+    mangadexExt.NAME: mangadexExt.Mangadex(),
+    mangakakalotExt.NAME: mangakakalotExt.Mangakakalot(),
+    nhentaiExt.NAME: nhentaiExt.NHentai()
 }
 
 
@@ -70,6 +70,9 @@ def main_search(query: str):
 
 
 def main_random():
+    """Retrieves a random manga from the extension's website, not compatible with all extensions
+    """
+
     global ext_active
 
     manga = random_manga(ext_active)
@@ -99,12 +102,12 @@ parser = argparse.ArgumentParser(
     formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=100))
 
 # extension argument parsing
-parser.add_argument("--mangadex", action="store_true",
-                    dest="mangadex", help="Sets active extension as MangaDex")
-parser.add_argument("--mangakakalot", action="store_true",
-                    dest="mangakakalot", help="Sets active extension as Mangakakalot")
-parser.add_argument("--nhentai", action="store_true",
-                    dest="nhentai", help="Sets active extension as nHentai")
+parser.add_argument(f"--{mangadexExt.NAME}", action="store_true",
+                    dest=f"{mangadexExt.NAME}", help="Sets active extension as MangaDex")
+parser.add_argument(f"--{mangakakalotExt.NAME}", action="store_true",
+                    dest=f"{mangadexExt.NAME}", help="Sets active extension as Mangakakalot")
+parser.add_argument(f"--{nhentaiExt.NAME}", action="store_true",
+                    dest=f"{mangadexExt.NAME}", help="Sets active extension as nHentai")
 
 # standardised functions for every extension
 parser.add_argument("-S", "--search", metavar="query", dest="search",

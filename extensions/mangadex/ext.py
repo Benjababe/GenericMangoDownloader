@@ -11,11 +11,13 @@ import extensions.mangadex.search as search
 import extensions.mangadex.parse as parse
 import misc
 
+NAME = "mangadex"
 API_URL = "https://api.mangadex.org"
 
 
 class Mangadex(Extension):
     scanlators = {}
+    tags = None
 
     # initialises pickled variables
     language = misc.read_pickle("mangadex", "language")
@@ -28,9 +30,11 @@ class Mangadex(Extension):
         data_saver = True
         misc.write_pickle("mangadex", "data_saver", data_saver)
 
+    # restoring previous login session if available
     stored_session = misc.read_pickle("mangadex", "session")
     session = stored_session if stored_session else requests.Session()
 
+    # to mark chapter as read upon downloading or not
     stored_mark = misc.read_pickle("mangadex", "mark_on_dl")
     mark_on_dl = stored_mark if stored_mark else False
 
@@ -38,8 +42,12 @@ class Mangadex(Extension):
         return parse.parse_url(self, url)
     # end_parse_url
 
-    def search(self, query: str, page: int, cover: bool = False, tag=False) -> Dict:
-        return search.search(self, query, page, cover, tag=tag)
+    def search(self, query: str, page: int, cover: bool = False, prompt_tag=True) -> Dict:
+        # if tag search, ask for tags only once and save it locally
+        if prompt_tag and self.tags == None:
+            self.tags = search.query_tags(self.session)
+
+        return search.search(self, query, page, cover, self.tags)
     # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:

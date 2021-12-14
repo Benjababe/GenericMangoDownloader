@@ -42,6 +42,7 @@ async def download_chapter_async(chapter: Chapter):
         chapter (Chapter): Chapter object with attributes populated
     """
 
+    # find and remove all invalid characters from folder pathname
     remove_char = '[<>:"\/|?*]'
     chapter_path = f"{DOWNLOAD_PATH}{re.sub(remove_char, '', chapter.manga_title)}/"
 
@@ -84,15 +85,24 @@ def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = ""
         cloudflare (bool, optional): Boolean flag to indicate whether cloudflare bypass is required. Defaults to False.
         headers (dict, optional): Dict of http headers for cloudflare bypass. Defaults to {}.
     """
+
+    # if somehow folder hasn't been made yet
     if not os.path.exists(chapter_path):
         os.makedirs(chapter_path)
 
-    res = cf_scraper.get(url, headers=headers) if cloudflare else \
-        session.get(url)
+    # Use either cloudflare bypass or regular http requests depending on extension requirements
+    if cloudflare:
+        res = cf_scraper.get(url, headers=headers)
+    else:
+        res = session.get(url)
 
+    # URL should always end with a .(jpg/png/gif)
     extension = url.split(".")[-1]
+
+    # reference path for the downloaded image
     page_path = f"{chapter_path}/{page_num}.{extension}"
 
+    # save data stream into reference path
     with open(page_path, "wb") as page:
         page.write(res.content)
         page.close()

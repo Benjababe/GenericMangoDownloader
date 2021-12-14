@@ -7,12 +7,12 @@ from models import Manga, Tag
 API_URL = "https://api.mangadex.org"
 
 
-def search(self, query: str, page: int, cover: bool = False, tag: bool = False) -> Dict:
+def search(self, query: str, page: int, cover: bool = False, search_tags: List[str] = []) -> Dict:
+    # only show 10 manga in search results at a time
     search_len = 10
     search_url = f"{API_URL}/manga"
 
-    search_tags = query_tags(self.session) if tag else []
-
+    # query Mangadex with proper parameters
     res = self.session.get(search_url, params={
         "title": query,
         "limit": search_len,
@@ -33,6 +33,7 @@ def search(self, query: str, page: int, cover: bool = False, tag: bool = False) 
 
         manga.title = item["attributes"]["title"][self.language]
         manga.id = item["id"]
+        cover = True
 
         # retrieves front cover URL
         if cover:
@@ -103,7 +104,6 @@ def query_tags(session: requests.Session) -> List[str]:
                 tags_used.append(tags[i])
 
         print("Currently using: ", end="" if len(tags_used) > 0 else "\n")
-
         for i in range(len(tags_used)):
             if i < len(tags_used) - 1:
                 print(f"{tags_used[i].name}", end=", ")

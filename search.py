@@ -18,6 +18,7 @@ def search(ext_active: Extension, query: str) -> Manga:
     page_index_in = -1
 
     while manga == None:
+        # first retrieves list of manga from search query
         search_res = ext_active.search(query, search_page)
         manga_list = search_res["manga_list"]
 
@@ -32,6 +33,7 @@ def search(ext_active: Extension, query: str) -> Manga:
 
         reinput = True
 
+        # keep asking until a manga selection is made, flagged by reinput
         while reinput:
             query_str = f"Which manga do you wish to download (1-{len(manga_list)}, < or > to move search page, q to quit): "
             page_index_in = (input(query_str) or "q").strip()

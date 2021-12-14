@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 # local files
 from models import Chapter, Extension, Manga, Tag
 
+NAME = "mangakakalot"
+
 
 class Mangakakalot(Extension):
     session = requests.Session()

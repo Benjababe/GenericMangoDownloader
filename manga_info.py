@@ -40,7 +40,7 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
 
     while True:
         query_str = f"Which chapters do you wish to download (1-{manga_info.chapters[-1].number}, q to quit): "
-        to_download = (input(query_str) or "q")
+        to_download = (input(query_str).lower().strip() or "q")
 
         if to_download == "q":
             return
@@ -61,17 +61,12 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
 # end_get_manga_info
 
 
-# returns a list of chapters to download
-# input:
-#       to_download:    string of user input on which chapters to download
-#       valid_chapters: dict using chapter numbers and keys and classes.Chapter objects as values
-# output: list of chapter numbers to download, i.e. [1.0, 1.5, 2.0, 3.1, 3.2...]
 def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[Chapter]:
     """Retrieves a list of chapters to be downloaded
 
     Args:
         to_download (str): String range of chapters to be downloaded
-        valid_chapters (list): List of Chapter objects
+        valid_chapters (List[Chapter]): List of Chapter objects
 
     Returns:
         List[Chapter]: List of Chapter objects with chapter numbers in range of 'to_download' parameter

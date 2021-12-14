@@ -10,6 +10,8 @@ import extensions.nhentai.account as account
 import extensions.nhentai.gallery as gallery
 import misc
 
+NAME = "nhentai"
+
 
 class NHentai(Extension):
     # initialises pickled variables
