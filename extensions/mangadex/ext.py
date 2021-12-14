@@ -39,7 +39,7 @@ class Mangadex(Extension):
     # end_parse_url
 
     def search(self, query: str, page: int, cover: bool = False, tag=False) -> Dict:
-        return search.search(self, query, page, cover, tag=False)
+        return search.search(self, query, page, cover, tag=True)
     # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:

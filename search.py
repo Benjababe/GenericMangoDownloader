@@ -21,6 +21,10 @@ def search(ext_active: Extension, query: str) -> Manga:
         search_res = ext_active.search(query, search_page)
         manga_list = search_res["manga_list"]
 
+        if len(manga_list) == 0:
+            print("There are 0 results for your search query. Exiting...")
+            return
+
         print(f"Search results for '{query}' page {search_page}:")
 
         for i in range(len(manga_list)):

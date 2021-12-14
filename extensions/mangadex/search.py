@@ -76,8 +76,13 @@ def query_tags(session: requests.Session) -> List[str]:
     tags = get_tags(session)
     print("Choose tags by number:")
 
-    for i in range(len(tags)):
-        print(f"{i+1}. {tags[i].name}")
+    # print all available tags
+    double_format = "{}. {:<25}\t\t{}. {:<25}"
+    for i in range(0, len(tags), 2):
+        if len(tags) - i > 1:
+            print(double_format.format(i+1, tags[i].name, i+2, tags[i+1].name))
+        else:
+            print(f"{i+1}. {tags[i].name}")
 
     tag_query = ""
     tags_used = []
@@ -101,7 +106,7 @@ def query_tags(session: requests.Session) -> List[str]:
 
         for i in range(len(tags_used)):
             if i < len(tags_used) - 1:
-                print(tags_used[i].name, end=", ")
+                print(f"{tags_used[i].name}", end=", ")
             else:
                 print(tags_used[i].name)
 

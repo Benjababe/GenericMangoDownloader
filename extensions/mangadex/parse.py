@@ -1,11 +1,23 @@
 import json
+from typing import Dict
 
 from classes import Manga, Chapter
 
 API_URL = "https://api.mangadex.org"
 
 
-def parse_url(self, url: str):
+def parse_url(self, url: str) -> Dict:
+    """Feeds URL into parser for either manga or chapter page
+
+    Args:
+        url (str): URL given by user
+
+    Returns:
+        Dict: {
+            "type": ("manga"|"chapter"),
+            "item": Manga or Chapter object
+        }
+    """
     MANGA_TEMPLATE = "https://mangadex.org/title/"
     CHAPTER_TEMPLATE = "https://mangadex.org/chapter/"
 
@@ -19,7 +31,6 @@ def parse_url(self, url: str):
     elif CHAPTER_TEMPLATE in url and url.index(CHAPTER_TEMPLATE) == 0:
         chapter_id = url.replace(CHAPTER_TEMPLATE, "").split("/")[0]
         return parse_url_chapter(self, chapter_id)
-
 # end_parse_url
 
 
