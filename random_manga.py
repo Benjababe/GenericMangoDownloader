@@ -1,4 +1,4 @@
-from classes import Extension, Manga
+from models import Extension, Manga
 
 
 def random_manga(ext_active: Extension) -> Manga:

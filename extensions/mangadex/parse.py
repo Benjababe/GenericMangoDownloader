@@ -1,7 +1,7 @@
 import json
 from typing import Dict
 
-from classes import Manga, Chapter
+from models import Manga, Chapter
 
 API_URL = "https://api.mangadex.org"
 

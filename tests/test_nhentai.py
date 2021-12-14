@@ -3,7 +3,7 @@ import unittest
 
 import download
 import extensions.nhentai.ext as nhentai
-from classes import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag
 
 
 class TestExtension(unittest.TestCase):

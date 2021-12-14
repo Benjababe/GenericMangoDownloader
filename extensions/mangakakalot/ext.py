@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 # local files
-from classes import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag
 
 
 class Mangakakalot(Extension):

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 # local files
-from classes import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag
 import extensions.nhentai.account as account
 import extensions.nhentai.gallery as gallery
 import misc
@@ -41,11 +41,16 @@ class NHentai(Extension):
 
         res = self.session.get(search_url)
         res.close()
+
         soup = BeautifulSoup(res.text, "html.parser")
 
         last_btn = soup.find("a", "last")
-        last_string = re.search(r"page=([0-9]{1,})", last_btn["href"]).group(1)
-        last_page = page >= int(last_string)
+        if last_btn == None:
+            last_page = True
+        else:
+            regex = r"page=([0-9]{1,})"
+            last_string = re.search(regex, last_btn["href"]).group(1)
+            last_page = page >= int(last_string)
 
         manga_list = []
 

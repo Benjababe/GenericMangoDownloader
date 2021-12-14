@@ -1,5 +1,5 @@
 from typing import List
-from classes import Chapter, Extension, Manga
+from models import Chapter, Extension, Manga
 
 
 def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:

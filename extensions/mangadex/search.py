@@ -2,7 +2,7 @@ import json
 import requests
 from typing import Dict, List
 
-from classes import Manga, Tag
+from models import Manga, Tag
 
 API_URL = "https://api.mangadex.org"
 

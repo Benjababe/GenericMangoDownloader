@@ -5,7 +5,7 @@ import requests
 from datetime import datetime
 
 # local files
-from classes import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag
 import extensions.mangadex.account as account
 import extensions.mangadex.search as search
 import extensions.mangadex.parse as parse
@@ -39,7 +39,7 @@ class Mangadex(Extension):
     # end_parse_url
 
     def search(self, query: str, page: int, cover: bool = False, tag=False) -> Dict:
-        return search.search(self, query, page, cover, tag=True)
+        return search.search(self, query, page, cover, tag=tag)
     # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:

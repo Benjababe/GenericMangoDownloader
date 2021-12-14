@@ -5,7 +5,7 @@ import re
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
-from classes import Chapter, Extension
+from models import Chapter, Extension
 
 DOWNLOAD_PATH = "./downloads/"
 

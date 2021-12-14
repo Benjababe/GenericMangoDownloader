@@ -1,4 +1,4 @@
-from classes import Extension, Manga
+from models import Extension, Manga
 
 
 def search(ext_active: Extension, query: str) -> Manga:

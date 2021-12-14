@@ -7,7 +7,7 @@ import download
 import misc
 import extensions.mangadex.account as account
 import extensions.mangadex.ext as mangadexExt
-from classes import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag
 
 
 # testing methods defined in Mangadex class
@@ -43,7 +43,7 @@ class TestExtension(unittest.TestCase):
 
     def test_search(self):
         query = "Umineko Tsubasa"
-        res = self.mangadex.search(query, 1)
+        res = self.mangadex.search(query, 1, tag=False)
 
         # checks all items in manga_list is a Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and

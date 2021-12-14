@@ -4,7 +4,7 @@ import unittest
 import download
 import misc
 import extensions.mangakakalot.ext as mangakakalotExt
-from classes import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag
 
 
 # testing methods defined in Mangakakalot class

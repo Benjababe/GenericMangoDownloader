@@ -2,7 +2,7 @@ import os
 import unittest
 
 import download
-from classes import Chapter
+from models import Chapter
 
 
 class TestDownload(unittest.TestCase):
