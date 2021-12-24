@@ -44,7 +44,7 @@ class TestExtension(unittest.TestCase):
         query = "Umineko Tsubasa"
         res = self.mangadex.search(query, 1, prompt_tag=False)
 
-        # checks all items in manga_list is a Manga object and attributes are populated
+        # checks all items in manga_list is a models.Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and
                         len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
         self.assertTrue(all_manga)
@@ -60,7 +60,7 @@ class TestExtension(unittest.TestCase):
 
         manga = self.mangadex.get_manga_info(manga)
 
-        # checks all items in 'chapters' key is a Chapter object
+        # checks all items in 'chapters' key is a models.Chapter object
         allChapters = all(isinstance(chapter, Chapter)
                           for chapter in manga.chapters)
 
@@ -100,7 +100,7 @@ class TestExtension(unittest.TestCase):
     # end_test_get_scanlator
 
     def test_pre_download(self):
-        # Chapter object that has been processed with pre_download
+        # models.Chapter object that has been processed with pre_download
         chapter = self.get_chapter()
 
         # ensures all page_urls are valid
@@ -142,10 +142,10 @@ class TestExtension(unittest.TestCase):
     # end_test_get_formatted_date
 
     def get_chapter(self) -> Chapter:
-        """ Helper method for retrieving an attribute-populated Chapter object
+        """ Helper method for retrieving an attribute-populated models.Chapter object
 
         Returns:
-            Chapter: Populated Chapter object
+            Chapter: Populated models.Chapter object
         """
 
         chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"

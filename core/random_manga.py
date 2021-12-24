@@ -8,7 +8,7 @@ def random_manga(ext_active: Extension) -> Manga:
         ext_active (Extension): Subclass of Extension class the site extension creates
 
     Returns:
-        Manga: Manga object with only id and title attributes populated
+        Manga: models.Manga object with only id and title attributes populated
     """
 
     manga = ext_active.get_random()

@@ -82,7 +82,7 @@ def main_get_manga_info(manga: Manga):
     """Gets chapters available for download and proceeds to downloading them
 
     Args:
-        manga (Manga): Manga object with only id and title attributes populated
+        manga (Manga): models.Manga object with only id and title attributes populated
     """
 
     global ext_active

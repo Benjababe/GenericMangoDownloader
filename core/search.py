@@ -9,7 +9,7 @@ def search(ext_active: Extension, query: str) -> Manga:
         query (str): Query string to search for manga
 
     Returns:
-        Manga: Manga object with only id and title attributes populated
+        Manga: models.Manga object with only id and title attributes populated
     """
 
     manga = None

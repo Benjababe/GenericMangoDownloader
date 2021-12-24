@@ -91,13 +91,13 @@ class Mangadex(Extension):
     # end_set_tags
 
     def get_chapter(self, res_results: dict) -> Chapter:
-        """Returns Chapter object from API call results
+        """Returns models.Chapter object from API call results
 
         Args:
             res_results (dict): Results from API call receiving list of chapters
 
         Returns:
-            Chapter: Chapter object parsed from API call results
+            Chapter: models.Chapter object parsed from API call results
         """
 
         # only return page_urls as filenames for now as it takes a GET request for the full URL
@@ -155,10 +155,10 @@ class Mangadex(Extension):
         """Preprocessing done before chapter download, retrieves full url for page downloads
 
         Args:
-            chapter (Chapter): Chapter object to be downloaded
+            chapter (Chapter): models.Chapter object to be downloaded
 
         Returns:
-            Chapter: Chapter object with page_urls populated
+            Chapter: models.Chapter object with page_urls populated
         """
         at_home_url = f"{API_URL}/at-home/server/{chapter.id}"
 

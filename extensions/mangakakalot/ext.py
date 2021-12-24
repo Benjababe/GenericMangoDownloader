@@ -103,13 +103,13 @@ class Mangakakalot(Extension):
     # end_get_manga_info
 
     def get_chapter(self, chapter_item: bs4.element.Tag) -> Chapter:
-        """Generates Chapter object with attributes populated
+        """Generates models.Chapter object with attributes populated
 
         Args:
             chapter_item (bs4.element.Tag): HTML element for chapter
 
         Returns:
-            Chapter: Chapter object with attributes populated
+            Chapter: models.Chapter object with attributes populated
         """
 
         chapter_name = chapter_item.find("a")
@@ -139,10 +139,10 @@ class Mangakakalot(Extension):
         """Preprocessing done before chapter download, retrieves full url for page downloads and sets cloudflare headers
 
         Args:
-            chapter (Chapter): Chapter object to be downloaded
+            chapter (Chapter): models.Chapter object to be downloaded
 
         Returns:
-            Chapter: Chapter object with page_urls populated and cloudflare headers set
+            Chapter: models.Chapter object with page_urls populated and cloudflare headers set
         """
 
         # accesses page 1 of chapter
@@ -177,7 +177,7 @@ def generate_headers(chapter: Chapter) -> dict:
     """Generate cloudflare headers for chapter downloads
 
     Args:
-        chapter (Chapter): Chapter object to be downloaded
+        chapter (Chapter): models.Chapter object to be downloaded
 
     Returns:
         dict: Headers to be used with cloudflare scraper 

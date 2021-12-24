@@ -15,7 +15,7 @@ def parse_url(self, url: str) -> Dict:
     Returns:
         Dict: {
             "type": ("manga"|"chapter"),
-            "item": Manga or Chapter object
+            "item": Manga or models.Chapter object
         }
     """
     MANGA_TEMPLATE = "https://mangadex.org/title/"

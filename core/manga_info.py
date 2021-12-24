@@ -7,10 +7,10 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
 
     Args:
         ext_active (Extension): Instantiated object of an Extension subclass
-        manga (Manga): Manga object with only id and title attributes populated
+        manga (Manga): models.Manga object with only id and title attributes populated
 
     Returns:
-        List[Chapter]: List of Chapter objects available to be downloaded
+        List[Chapter]: List of models.Chapter objects available to be downloaded
     """
 
     manga_info = ext_active.get_manga_info(manga)
@@ -66,10 +66,10 @@ def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[C
 
     Args:
         to_download (str): String range of chapters to be downloaded
-        valid_chapters (List[Chapter]): List of Chapter objects
+        valid_chapters (List[Chapter]): List of models.Chapter objects
 
     Returns:
-        List[Chapter]: List of Chapter objects with chapter numbers in range of 'to_download' parameter
+        List[Chapter]: List of models.Chapter objects with chapter numbers in range of 'to_download' parameter
     """
 
     new_to_download = []

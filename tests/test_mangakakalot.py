@@ -18,7 +18,7 @@ class TestExtension(unittest.TestCase):
         query = "Umineko Tsubasa"
         res = self.mangakakalot.search(query, 1)
 
-        # checks all items in manga_list is a Manga object
+        # checks all items in manga_list is a models.Manga object
         all_manga = all(isinstance(manga, Manga) and
                         len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
         self.assertTrue(all_manga and isinstance(res["last_page"], bool))
@@ -34,7 +34,7 @@ class TestExtension(unittest.TestCase):
 
         manga = self.mangakakalot.get_manga_info(manga)
 
-        # checks all items in 'chapters' key is a Chapter object
+        # checks all items in 'chapters' key is a models.Chapter object
         allChapters = all(isinstance(item, Chapter)
                           for item in manga.chapters)
 

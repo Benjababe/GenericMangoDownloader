@@ -18,7 +18,7 @@ def download_chapters(ext_active: Extension, valid_chapters: list):
 
     Args:
         ext_active (Extension): Subclass of Extension class the site extension creates
-        valid_chapters (list): List of Chapter objects with attributes populated
+        valid_chapters (list): List of models.Chapter objects with attributes populated
     """
 
     for chapter in valid_chapters:
@@ -39,7 +39,7 @@ async def download_chapter_async(chapter: Chapter):
     """Downloads a chapter in an asynchronous thread, 10 pages at once
 
     Args:
-        chapter (Chapter): Chapter object with attributes populated
+        chapter (Chapter): models.Chapter object with attributes populated
     """
 
     # find and remove all invalid characters from folder pathname

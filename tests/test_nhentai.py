@@ -15,7 +15,7 @@ class TestExtension(unittest.TestCase):
         query = "Umineko"
         res = self.nhentai.search(query, 1)
 
-        # checks all items in manga_list is a Manga object and attributes are populated
+        # checks all items in manga_list is a models.Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and
                         len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
         self.assertTrue(all_manga)
@@ -27,7 +27,7 @@ class TestExtension(unittest.TestCase):
     def test_get_manga_info(self):
         manga = self.get_manga()
 
-        # checks all items in 'chapters' key is a Chapter object
+        # checks all items in 'chapters' key is a models.Chapter object
         allChapters = all(isinstance(chapter, Chapter)
                           for chapter in manga.chapters)
 
@@ -71,10 +71,10 @@ class TestExtension(unittest.TestCase):
     # end_test_get_formatted_date
 
     def get_manga(self) -> Manga:
-        """ Helper method for retrieving an attribute-populated Manga object
+        """ Helper method for retrieving an attribute-populated models.Manga object
 
         Returns:
-            Manga: Populated Manga object
+            Manga: Populated models.Manga object
         """
 
         manga = Manga()
