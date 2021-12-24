@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import download
+import core
 from models import Chapter
 
 
@@ -13,7 +13,7 @@ class TestDownload(unittest.TestCase):
     # end_setUp
 
     def test_single_download(self):
-        download.download_page(self.URL, self.PATH, 1)
+        core.download.download_page(self.URL, self.PATH, 1)
         check = os.path.exists(f"{self.PATH}/1.jpg")
         self.assertTrue(check)
     # end_test_single_download
@@ -43,7 +43,7 @@ class TestAsyncDownload(unittest.IsolatedAsyncioTestCase):
         chapter.number = "1"
 
         # downloads all 10 images
-        await download.download_chapter_async(chapter)
+        await core.download.download_chapter_async(chapter)
 
         # ensures all 10 files are downloaded
         check = all(os.path.exists(f"{self.PATH}/{i}.jpg")

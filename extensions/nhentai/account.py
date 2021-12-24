@@ -1,8 +1,7 @@
 import json
 
 import requests
-import misc
-import re
+import core
 
 from bs4 import BeautifulSoup
 
@@ -28,7 +27,7 @@ def login(session: requests.Session, session_id: str = ""):
     res.close()
     soup = BeautifulSoup(res.text, "html.parser")
 
-    misc.write_pickle("nhentai", "session", session)
+    core.write_pickle("nhentai", "session", session)
     username = soup.find("span", "username").text.strip()
     print(f"Logged in as {username}")
 # end_login

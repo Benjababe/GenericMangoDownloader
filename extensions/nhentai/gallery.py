@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from extensions.mangadex.ext import API_URL
 
-import misc
+import core
 
 # global variables, used when accessing the same gallery page to reduce GET requests
 GALLERY_FORMAT = "https://nhentai.net/g/{}"
@@ -101,7 +101,7 @@ def comment(session: requests.Session, manga_id: str):
             "manga_id": manga_id,
             "comment_id": data["comment"]["id"]
         }
-        misc.write_pickle("nhentai", "last_comment", last_comment)
+        core.write_pickle("nhentai", "last_comment", last_comment)
         print(f"Successfully commented on {title}")
 
     elif "error" in data:
@@ -110,7 +110,7 @@ def comment(session: requests.Session, manga_id: str):
 
 
 def undo_comment(session: requests.Session):
-    last_comment = misc.read_pickle("nhentai", "last_comment")
+    last_comment = core.read_pickle("nhentai", "last_comment")
     if last_comment == None:
         return
 
@@ -126,7 +126,7 @@ def undo_comment(session: requests.Session):
 
     if data["success"]:
         print("Last comment deleted")
-        misc.delete_pickle("nhentai", "last_comment")
+        core.delete_pickle("nhentai", "last_comment")
 # end_undo_comment
 
 

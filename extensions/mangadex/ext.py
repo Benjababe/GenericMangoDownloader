@@ -1,6 +1,6 @@
 # standard libraries
 import json
-from typing import Dict
+from typing import Dict, List
 import requests
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from models import Chapter, Extension, Manga, Tag
 import extensions.mangadex.account as account
 import extensions.mangadex.search as search
 import extensions.mangadex.parse as parse
-import misc
+import core
 
 NAME = "mangadex"
 API_URL = "https://api.mangadex.org"
@@ -20,22 +20,22 @@ class Mangadex(Extension):
     tags = None
 
     # initialises pickled variables
-    language = misc.read_pickle("mangadex", "language")
+    language = core.read_pickle("mangadex", "language")
     if language == None:
         language = "en"
-        misc.write_pickle("mangadex", "language", language)
+        core.write_pickle("mangadex", "language", language)
 
-    data_saver = misc.read_pickle("mangadex", "data_saver")
+    data_saver = core.read_pickle("mangadex", "data_saver")
     if data_saver == None:
         data_saver = True
-        misc.write_pickle("mangadex", "data_saver", data_saver)
+        core.write_pickle("mangadex", "data_saver", data_saver)
 
     # restoring previous login session if available
-    stored_session = misc.read_pickle("mangadex", "session")
+    stored_session = core.read_pickle("mangadex", "session")
     session = stored_session if stored_session else requests.Session()
 
     # to mark chapter as read upon downloading or not
-    stored_mark = misc.read_pickle("mangadex", "mark_on_dl")
+    stored_mark = core.read_pickle("mangadex", "mark_on_dl")
     mark_on_dl = stored_mark if stored_mark else False
 
     def parse_url(self, url: str):
@@ -85,6 +85,10 @@ class Mangadex(Extension):
 
         return manga
     # end_get_manga_info
+
+    def set_tags(self, tags: List[str]):
+        self.tags = tags
+    # end_set_tags
 
     def get_chapter(self, res_results: dict) -> Chapter:
         """Returns Chapter object from API call results

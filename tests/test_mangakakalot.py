@@ -1,8 +1,7 @@
 import os
 import unittest
 
-import download
-import misc
+import core
 import extensions.mangakakalot.ext as mangakakalotExt
 from models import Chapter, Manga, Tag
 
@@ -56,7 +55,7 @@ class TestExtension(unittest.TestCase):
         self.assertTrue(isinstance(chapter.headers, dict))
 
         # ensure all page_urls are valid
-        page_check = all(misc.is_url(url) for url in chapter.page_urls)
+        page_check = all(core.is_url(url) for url in chapter.page_urls)
         self.assertTrue(page_check)
     # end_test_pre_download
 
@@ -75,8 +74,8 @@ class TestExtension(unittest.TestCase):
         page = chapter.page_urls[0]
         cf = chapter.cloudflare
         headers = chapter.headers
-        download.download_page(page, DOWNLOAD_PATH, 1,
-                               cloudflare=cf, headers=headers)
+        core.download.download_page(page, DOWNLOAD_PATH, 1,
+                                    cloudflare=cf, headers=headers)
 
         # gets filesize of page
         size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")

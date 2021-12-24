@@ -1,7 +1,7 @@
 import json
 import requests
 
-import misc
+import core
 
 API_URL = "https://api.mangadex.org"
 
@@ -41,7 +41,7 @@ def login(session: requests.Session, username: str = "", password: str = "", mar
         session.headers.update({"Authorization": data["token"]["session"]})
 
         # saving current session into a pickle
-        misc.write_pickle("mangadex", "session", session)
+        core.write_pickle("mangadex", "session", session)
         print("Successfully logged in as", username)
 
         if mark_on_dl == "":
@@ -56,21 +56,21 @@ def login(session: requests.Session, username: str = "", password: str = "", mar
                 print("Invalid input, defaulting to no")
                 mark_on_dl = False
 
-        misc.write_pickle("mangadex", "mark_on_dl", mark_on_dl)
+        core.write_pickle("mangadex", "mark_on_dl", mark_on_dl)
 # end_login
 
 
 def toggle_data_saver(session: requests.Session):
-    data_saver = misc.read_pickle("mangadex", "data_saver")
+    data_saver = core.read_pickle("mangadex", "data_saver")
     data_saver = not data_saver
-    misc.write_pickle("mangadex", "data_saver", data_saver)
+    core.write_pickle("mangadex", "data_saver", data_saver)
 
     print(f"Data saver set to: {data_saver}")
 # end_data_saver
 
 
 def set_language(session: requests.Session, language: str):
-    misc.write_pickle("mangadex", "language", language)
+    core.write_pickle("mangadex", "language", language)
     print(f"Language set to: {language}")
 # end_set_language
 

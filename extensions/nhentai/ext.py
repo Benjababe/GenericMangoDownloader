@@ -8,14 +8,14 @@ from datetime import datetime
 from models import Chapter, Extension, Manga, Tag
 import extensions.nhentai.account as account
 import extensions.nhentai.gallery as gallery
-import misc
+import core
 
 NAME = "nhentai"
 
 
 class NHentai(Extension):
     # initialises pickled variables
-    stored_session = misc.read_pickle("nhentai", "session")
+    stored_session = core.read_pickle("nhentai", "session")
     session = stored_session if stored_session else requests.Session()
 
     def parse_url(self, query: str) -> dict:

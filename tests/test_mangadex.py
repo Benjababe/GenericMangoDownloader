@@ -3,8 +3,7 @@ import os
 import requests
 import unittest
 
-import download
-import misc
+import core
 import extensions.mangadex.account as account
 import extensions.mangadex.ext as mangadexExt
 from models import Chapter, Manga, Tag
@@ -16,7 +15,7 @@ class TestExtension(unittest.TestCase):
     # variables used in test cases
     def setUp(self) -> None:
         self.mangadex = mangadexExt.Mangadex()
-        self.session = misc.read_pickle("mangadex", "session")
+        self.session = core.read_pickle("mangadex", "session")
         self.API_URL = "https://api.mangadex.org"
         self.manga_id = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         self.chapter_id = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
@@ -105,7 +104,7 @@ class TestExtension(unittest.TestCase):
         chapter = self.get_chapter()
 
         # ensures all page_urls are valid
-        check = all(misc.is_url(url) for url in chapter.page_urls)
+        check = all(core.is_url(url) for url in chapter.page_urls)
         self.assertTrue(check)
     # end_test_pre_download
 
@@ -117,7 +116,7 @@ class TestExtension(unittest.TestCase):
 
         # downloads only 1 page to sample
         page = chapter.page_urls[0]
-        download.download_page(page, DOWNLOAD_PATH, 1)
+        core.download.download_page(page, DOWNLOAD_PATH, 1)
 
         # gets filesize of page
         size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
@@ -168,7 +167,7 @@ class TestExtension(unittest.TestCase):
 class TestAccount(unittest.TestCase):
     def setUp(self) -> None:
         # reads login session for every test in this class
-        self.session = misc.read_pickle("mangadex", "session")
+        self.session = core.read_pickle("mangadex", "session")
 
         if self.session == None:
             self.session = requests.Session()

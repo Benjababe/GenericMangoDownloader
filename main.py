@@ -4,11 +4,7 @@ import sys
 from models import Manga
 
 # local files
-import download
-import misc
-from manga_info import get_manga_info
-from random_manga import random_manga
-from search import search
+import core
 
 # extensions
 import extensions.mangadex.ext as mangadexExt
@@ -35,7 +31,7 @@ def main_parse_url(url: str):
         url (str): URL string to be parsed
     """
 
-    if not misc.is_url(url):
+    if not core.is_url(url):
         print("A URL was not provided")
         return
 
@@ -49,7 +45,7 @@ def main_parse_url(url: str):
 
     # if type is chapter, output should be a regular chapter object
     elif parsed_url["type"] == "chapter":
-        download.download_chapters(ext_active, [parsed_url["item"]])
+        core.download_chapters(ext_active, [parsed_url["item"]])
 # end_parse_url
 
 
@@ -62,7 +58,7 @@ def main_search(query: str):
 
     global ext_active
 
-    manga = search(ext_active, query)
+    manga = core.search(ext_active, query)
 
     if manga:
         main_get_manga_info(manga)
@@ -75,7 +71,7 @@ def main_random():
 
     global ext_active
 
-    manga = random_manga(ext_active)
+    manga = core.random_manga(ext_active)
 
     if manga:
         main_get_manga_info(manga)
@@ -91,10 +87,10 @@ def main_get_manga_info(manga: Manga):
 
     global ext_active
 
-    valid_chapters = get_manga_info(ext_active, manga)
+    valid_chapters = core.get_manga_info(ext_active, manga)
 
     if valid_chapters:
-        download.download_chapters(ext_active, valid_chapters)
+        core.download_chapters(ext_active, valid_chapters)
 # end_main_get_manga_info
 
 
@@ -151,7 +147,7 @@ def parse_arguments():
             # sets active extension
             if arg in ext_dict.keys() and val == True:
                 # ensures pickle has key for active extension
-                misc.check_pickle(arg)
+                core.check_pickle(arg)
                 ext_active = ext_dict[arg]
                 # ext_active.arg_handler(unknown_args)
 
