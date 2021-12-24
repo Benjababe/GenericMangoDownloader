@@ -74,8 +74,8 @@ class TestExtension(unittest.TestCase):
         page = chapter.page_urls[0]
         cf = chapter.cloudflare
         headers = chapter.headers
-        core.download.download_page(page, DOWNLOAD_PATH, 1,
-                                    cloudflare=cf, headers=headers)
+        core.download_page(page, DOWNLOAD_PATH, 1,
+                           cloudflare=cf, headers=headers)
 
         # gets filesize of page
         size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")

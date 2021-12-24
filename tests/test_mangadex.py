@@ -116,7 +116,7 @@ class TestExtension(unittest.TestCase):
 
         # downloads only 1 page to sample
         page = chapter.page_urls[0]
-        core.download.download_page(page, DOWNLOAD_PATH, 1)
+        core.download_page(page, DOWNLOAD_PATH, 1)
 
         # gets filesize of page
         size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
