@@ -1,4 +1,5 @@
 from typing import List
+from core.misc import is_valid_download_range
 from models import Chapter, Extension, Manga
 
 
@@ -45,13 +46,13 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
         if to_download == "q":
             return
 
-        to_download = parse_to_download(to_download, valid_chapters)
-
         # keeps asking for chapters until a valid input is given
-        if len(to_download) > 0:
+        if is_valid_download_range(to_download):
             break
         else:
             print("Error with input, please try again.")
+
+    to_download = parse_to_download(to_download, valid_chapters)
 
     # only keeps the keys that are requested to be downloaded in valid_chapters
     valid_chapters = [valid_chapters[chapter_num]
@@ -80,8 +81,8 @@ def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[C
         chapters = chapters.strip().split("-")
 
         # if only 1 chapter from the comma split
-        if len(chapters) == 1 and int(chapters[0]) in valid_chapters:
-            new_to_download.append(int(chapters[0]))
+        if len(chapters) == 1 and float(chapters[0]) in valid_chapters:
+            new_to_download.append(float(chapters[0]))
 
         # range of chapters from the comma split
         elif len(chapters) == 2:

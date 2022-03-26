@@ -134,3 +134,28 @@ def is_url(url: str) -> bool:
 
     return not re.match(regex, url) == None
 # end_is_url
+
+
+def is_valid_download_range(to_download: str) -> bool:
+    """Checks whether download range from manga_info is valid
+
+    Args:
+        num (str): Range of chapters to download. Eg ("1-10", "1-10.5", "1,2,3,5-7", "1.5,3-8")
+
+    Returns:
+        bool: _description_
+    """
+    res = True
+    pattern = re.compile("^\d+(\.?\d+)?$")
+    dl_spl = to_download.split(",")
+    num_list = []
+
+    for i in range(len(dl_spl)):
+        num_list += dl_spl[i].split("-")
+
+    for number in num_list:
+        if not bool(re.search(pattern, number.strip())):
+            res = False
+
+    return res
+# end_is_digit
