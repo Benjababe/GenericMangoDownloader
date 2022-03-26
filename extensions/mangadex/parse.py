@@ -75,27 +75,25 @@ def parse_url_chapter(self, chapter_id: str) -> dict:
 
     res = self.session.get(chapter_info_url)
     res.close()
-    data = json.loads(res.text)
+    data = res.json()["data"]
 
     chapter = Chapter(pre_download=True)
 
-    chapter.id = chapter_id
-    chapter.title = data["data"]["attributes"]["title"]
-    chapter.number = data["data"]["attributes"]["chapter"]
-    chapter.page_urls = data["data"]["attributes"]["dataSaver" if self.data_saver else "data"]
-    chapter.scanlator = self.get_scanlator(data["data"]["relationships"])
-    chapter.add_attribute("hash", data["data"]["attributes"]["hash"])
+    chapter.number = data["attributes"]["chapter"]
+    chapter.id = data["id"]
+    chapter.title = data["attributes"]["title"]
+    chapter.scanlator = self.get_scanlator(data["relationships"])
 
-    for rel in data["data"]["relationships"]:
+    for rel in data["relationships"]:
         if rel["type"] == "manga":
             manga_info_url = f"{API_URL}/manga/{rel['id']}"
-            chapter_lang = data["data"]["attributes"]["translatedLanguage"]
+            chapter_lang = data["attributes"]["translatedLanguage"]
 
             res = self.session.get(manga_info_url)
             res.close()
-            data = json.loads(res.text)
+            data = res.json()["data"]
 
-            chapter.manga_title = data["data"]["attributes"]["title"][chapter_lang]
+            chapter.manga_title = data["attributes"]["title"][chapter_lang]
             chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
 
     return {

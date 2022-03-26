@@ -94,7 +94,7 @@ def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = ""
     if cloudflare:
         res = cf_scraper.get(url, headers=headers)
     else:
-        res = session.get(url)
+        res = session.get(url, headers=headers)
 
     # URL should always end with a .(jpg/png/gif)
     extension = url.split(".")[-1]
@@ -103,10 +103,14 @@ def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = ""
     page_path = f"{chapter_path}/{page_num}.{extension}"
 
     # save data stream into reference path
-    with open(page_path, "wb") as page:
-        page.write(res.content)
-        page.close()
+    if res.ok:
+        with open(page_path, "wb") as page:
+            page.write(res.content)
+            page.close()
+        print(dl_print)
+
+    else:
+        print(f"Page {page_num}: {res.url} failed...")
 
     res.close()
-    print(dl_print)
 # end_download_page

@@ -80,7 +80,6 @@ class TestExtension(unittest.TestCase):
         chapter = self.mangadex.get_chapter(data)
 
         self.assertEqual(chapter.date, "11/04/2018")
-        self.assertEqual(chapter.hash, "00aea69c4485d6a5fb2186ec82188f21")
         self.assertEqual(chapter.id, self.chapter_id)
         self.assertEqual(chapter.number, "1")
         self.assertEqual(chapter.pre_download, True)
@@ -136,7 +135,7 @@ class TestExtension(unittest.TestCase):
 
     def test_get_formatted_date(self):
         DATETIME = "2018-04-11T20:23:32+00:00"
-        date = mangadexExt.get_formatted_date(DATETIME)
+        date = mangadexExt.format_date(DATETIME)
 
         self.assertEquals(date, "11/04/2018")
     # end_test_get_formatted_date

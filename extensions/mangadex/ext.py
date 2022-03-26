@@ -16,27 +16,30 @@ API_URL = "https://api.mangadex.org"
 
 
 class Mangadex(Extension):
-    scanlators = {}
-    tags = None
+    def __init__(self):
+        super().__init__()
 
-    # initialises pickled variables
-    language = core.read_pickle("mangadex", "language")
-    if language == None:
-        language = "en"
-        core.write_pickle("mangadex", "language", language)
+        self.scanlators = {}
+        self.tags = None
 
-    data_saver = core.read_pickle("mangadex", "data_saver")
-    if data_saver == None:
-        data_saver = True
-        core.write_pickle("mangadex", "data_saver", data_saver)
+        # initialises pickled variables
+        self.language = core.read_pickle("mangadex", "language")
+        if self.language == None:
+            self.language = "en"
+            core.write_pickle("mangadex", "language", self.language)
 
-    # restoring previous login session if available
-    stored_session = core.read_pickle("mangadex", "session")
-    session = stored_session if stored_session else requests.Session()
+        self.data_saver = core.read_pickle("mangadex", "data_saver")
+        if self.data_saver == None:
+            self.data_saver = True
+            core.write_pickle("mangadex", "data_saver", self.data_saver)
 
-    # to mark chapter as read upon downloading or not
-    stored_mark = core.read_pickle("mangadex", "mark_on_dl")
-    mark_on_dl = stored_mark if stored_mark else False
+        # restoring previous login session if available
+        stored_session = core.read_pickle("mangadex", "session")
+        self.session = stored_session if stored_session else requests.Session()
+
+        # to mark chapter as read upon downloading or not
+        stored_mark = core.read_pickle("mangadex", "mark_on_dl")
+        self.mark_on_dl = stored_mark if stored_mark else False
 
     def parse_url(self, url: str):
         return parse.parse_url(self, url)
@@ -108,13 +111,8 @@ class Mangadex(Extension):
         chapter.number = res_results["attributes"]["chapter"]
         chapter.id = res_results["id"]
         chapter.title = res_results["attributes"]["title"]
-        chapter.page_urls = res_results["attributes"]["dataSaver" if self.data_saver else "data"]
         chapter.scanlator = self.get_scanlator(res_results["relationships"])
-        chapter.date = get_formatted_date(
-            res_results["attributes"]["updatedAt"])
-        chapter.add_attribute(
-            "hash", res_results["attributes"]["hash"]
-        )
+        chapter.date = format_date(res_results["attributes"]["updatedAt"])
 
         return chapter
     # end_get_chapter
@@ -164,14 +162,14 @@ class Mangadex(Extension):
 
         res = self.session.get(at_home_url)
         res.close()
-        tmp_data = json.loads(res.text)
+        tmp_data = res.json()
 
         # image url without the filename
-        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/{chapter.hash}"
+        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/{tmp_data['chapter']['hash']}"
 
         # constructs full image url
         chapter.page_urls = [
-            f"{base_url}/{filename}" for filename in chapter.page_urls
+            f"{base_url}/{filename}" for filename in tmp_data["chapter"]["dataSaver" if self.data_saver else "data"]
         ]
 
         if self.mark_on_dl and self.session.cookies.get("Login"):
@@ -217,7 +215,7 @@ class Mangadex(Extension):
 # end_Mangadex_class
 
 
-def get_formatted_date(upload_date: str) -> str:
+def format_date(upload_date: str) -> str:
     """Converts ISO8601 datetime format that MangaDex provides to DD/MM/YYYY
 
     Args:

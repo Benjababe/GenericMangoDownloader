@@ -7,7 +7,7 @@ from models import Chapter
 
 class TestDownload(unittest.TestCase):
     def setUp(self) -> None:
-        self.URL = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_100kB.jpg"
+        self.URL = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_100kB.jpg"
         self.PATH = "./downloads/unittest"
         return super().setUp()
     # end_setUp
@@ -29,8 +29,8 @@ class TestDownload(unittest.TestCase):
 
 class TestAsyncDownload(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.URL1 = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_100kB.jpg"
-        self.URL2 = "https://file-examples-com.github.io/uploads/2017/10/file_example_JPG_500kB.jpg"
+        self.URL1 = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_100kB.jpg"
+        self.URL2 = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_500kB.jpg"
         self.PATH = "./downloads/unittest"
         return super().setUp()
     # end_setUp
