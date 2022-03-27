@@ -8,12 +8,12 @@ class Manga():
         """Constructor for Manga class
 
         """
-        self.title = ""
-        self.id = ""
-        self.cover_url = ""
-        self.description = ""
-        self.tags = ""
-        self.chapters = []
+        self.title: str = ""
+        self.id: str = ""
+        self.cover_url: str = ""
+        self.description: str = ""
+        self.tags: list[Tag] = []
+        self.chapters: list[Chapter] = []
 
     def add_attribute(self, name: str, value: str):
         setattr(self, name, value)

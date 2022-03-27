@@ -10,13 +10,15 @@ import core
 import extensions.mangadex.ext as mangadexExt
 import extensions.mangakakalot.ext as mangakakalotExt
 import extensions.nhentai.ext as nhentaiExt
+import extensions.hitomi.ext as hitomiExt
 
 
 # to match the object via string
 ext_dict = {
     mangadexExt.NAME: mangadexExt.Mangadex(),
     mangakakalotExt.NAME: mangakakalotExt.Mangakakalot(),
-    nhentaiExt.NAME: nhentaiExt.NHentai()
+    nhentaiExt.NAME: nhentaiExt.NHentai(),
+    hitomiExt.NAME: hitomiExt.Hitomi()
 }
 
 
@@ -104,6 +106,8 @@ parser.add_argument(f"--{mangakakalotExt.NAME}", action="store_true",
                     dest=f"{mangadexExt.NAME}", help="Sets active extension as Mangakakalot")
 parser.add_argument(f"--{nhentaiExt.NAME}", action="store_true",
                     dest=f"{mangadexExt.NAME}", help="Sets active extension as nHentai")
+parser.add_argument(f"--{hitomiExt.NAME}", action="store_true",
+                    dest=f"{hitomiExt.NAME}", help="Sets active extension as Hitomi.la")
 
 # standardised functions for every extension
 parser.add_argument("-S", "--search", metavar="query", dest="search",

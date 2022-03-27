@@ -59,32 +59,32 @@ class Mangadex(Extension):
 
         res = self.session.get(manga_info_url)
         res.close()
-        data = json.loads(res.text)
+        data = res.json()["data"]
 
         # variables to be returned in manga_info dict
-        description = data["data"]["attributes"]["description"][self.language]
-        tags = []
+        if self.language in data["attributes"]["description"]:
+            manga.description = data["attributes"]["description"][self.language]
+        else:
+            manga.description = "No description in your preferred language"
 
-        for tag in data["data"]["attributes"]["tags"]:
+        for tag in data["attributes"]["tags"]:
             name = tag["attributes"]["name"][self.language]
             id = tag["id"]
-            tags.append(Tag(name, id))
+            manga.tags.append(Tag(name, id))
 
+        # retrieves list of chapters for the current manga
         res = self.session.get(chapter_list_url, params={
             "manga": manga.id,
             "limit": 100,
             "translatedLanguage[]": self.language
         })
         res.close()
-        data = json.loads(res.text)
+        data = res.json()["data"]
 
-        for res_results in data["data"]:
+        for res_results in data:
             chapter = self.get_chapter(res_results)
             chapter.manga_title = manga.title
             manga.chapters.append(chapter)
-
-        manga.description = description
-        manga.tags = tags
 
         return manga
     # end_get_manga_info
