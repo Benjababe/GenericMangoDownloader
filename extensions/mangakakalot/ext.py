@@ -37,7 +37,7 @@ class Mangakakalot(Extension):
         else:
             paging_string = paging_elem.string.strip()
             paging_string = re.search(
-                r"Last\(([0-9]{1,})\)", paging_string).group(1)
+                r"Last\(([0-9]+)\)", paging_string).group(1)
             last_page = page >= int(paging_string)
 
         manga_list = []
@@ -117,7 +117,7 @@ class Mangakakalot(Extension):
 
         chapter = Chapter(pre_download=True)
 
-        chapter_num_pattern = r"Chapter ([0-9.]{1,})"
+        chapter_num_pattern = r"Chapter ([0-9.]+)"
         matched = re.search(chapter_num_pattern,
                             chapter_name["title"], flags=re.IGNORECASE)
         chapter.number = matched.group(1)

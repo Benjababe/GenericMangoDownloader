@@ -50,7 +50,7 @@ class NHentai(Extension):
         if last_btn == None:
             last_page = True
         else:
-            regex = r"page=([0-9]{1,})"
+            regex = r"page=([0-9]+)"
             last_string = re.search(regex, last_btn["href"]).group(1)
             last_page = page >= int(last_string)
 
@@ -60,7 +60,7 @@ class NHentai(Extension):
 
         for item in gallery:
             # gets id from "/g/{id}"
-            id = re.search(r"\/g\/([0-9]{1,})\/",
+            id = re.search(r"\/g\/([0-9]+)\/",
                            item.find("a")["href"]).group(1)
             title = item.find("div", "caption").string
 

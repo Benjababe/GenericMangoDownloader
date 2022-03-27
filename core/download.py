@@ -74,7 +74,8 @@ async def download_chapter_async(chapter: Chapter):
 
 
 # basic download function from the given image url
-def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = "", cloudflare: bool = False, headers: dict = {}):
+def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = "",
+                  cloudflare: bool = False, headers: dict = {}):
     """Downloads manga image from URL
 
     Args:

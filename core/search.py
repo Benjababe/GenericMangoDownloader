@@ -35,13 +35,16 @@ def search(ext_active: Extension, query: str) -> Manga:
 
         # keep asking until a manga selection is made, flagged by reinput
         while reinput:
-            query_str = f"Which manga do you wish to download (1-{len(manga_list)}, < or > to move search page, q to quit): "
+            max_num = len(manga_list)
+            query_str = f"Which manga do you wish to download (1-{max_num}, < or > to move search page, q to quit): "
             page_index_in = (input(query_str) or "q").strip()
 
             if (page_index_in == "q"):
                 return
 
             print("")
+
+            # if user wants to navigate pages
             if page_index_in in ["<", ">"]:
                 # decrementing page below 1
                 if search_page == 1 and page_index_in == "<":

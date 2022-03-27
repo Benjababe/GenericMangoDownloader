@@ -10,6 +10,7 @@ class Extension(ABC):
     Ensure all methods that can be implemented are done so
     """
 
+    # TODO return a ParseResult class instead of a generic dict
     @abstractmethod
     def parse_url(self, query: str) -> dict:
         """Checks URL string whether it is a manga or chapter page
@@ -27,8 +28,10 @@ class Extension(ABC):
             }
         """
 
-        raise NotImplementedError("parse_url method has not been implemented")
+        msg = "parse_url method has not been implemented"
+        raise NotImplementedError(msg)
 
+    # TODO return a new SearchResult class instead of a generic dict
     @abstractmethod
     def search(self, query: str, page: int, cover: bool = False) -> dict:
         """Search the extension's website using the query string
@@ -48,7 +51,8 @@ class Extension(ABC):
             }
         """
 
-        raise NotImplementedError("search method has not been implemented")
+        msg = "search method has not been implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_manga_info(self, manga: Manga) -> Manga:
@@ -64,8 +68,8 @@ class Extension(ABC):
             Manga: models.Manga object with all applicable attributes populated
         """
 
-        raise NotImplementedError(
-            "get_manga_info method has not been implemented")
+        msg = "get_manga_info method has not been implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_random(self) -> Manga:
@@ -78,7 +82,8 @@ class Extension(ABC):
             Manga: Random models.Manga object
         """
 
-        raise NotImplementedError("get_random method has not been implemented")
+        msg = "get_random method has not been implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def arg_handler(self, args: List[str]):
@@ -91,6 +96,6 @@ class Extension(ABC):
             NotImplementedError: When method isn't implemented by the subclass
         """
 
-        raise NotImplementedError(
-            "arg_handler method has not been implemented")
+        msg = "arg_handler method has not been implemented"
+        raise NotImplementedError(msg)
 # end_Extension

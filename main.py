@@ -41,7 +41,7 @@ def main_parse_url(url: str):
 
     parsed_url = ext_active.parse_url(url)
 
-    # if type if manga, output should be a dict with keys "title" and "manga_id"
+    # if type is manga, output should be a dict with keys "title" and "manga_id"
     if parsed_url["type"] == "manga":
         main_get_manga_info(parsed_url["item"])
 
