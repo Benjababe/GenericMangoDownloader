@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 import cfscrape
 import os
 import re
@@ -13,7 +14,7 @@ session = requests.Session()
 cf_scraper = cfscrape.create_scraper()
 
 
-def download_chapters(ext_active: Extension, valid_chapters: list):
+def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
     """[summary]
 
     Args:

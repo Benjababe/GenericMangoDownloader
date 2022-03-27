@@ -6,7 +6,7 @@ import unittest
 import core
 import extensions.mangadex.account as account
 import extensions.mangadex.ext as mangadexExt
-from models import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag, SearchResult, ParseResult
 
 
 # testing methods defined in Mangadex class
@@ -31,26 +31,31 @@ class TestExtension(unittest.TestCase):
 
         # tests manga url parsing
         res = self.mangadex.parse_url(MANGA_URL)
-        check = res["type"] == "manga" and isinstance(res["item"], Manga)
-        self.assertTrue(check)
+        check_type = res.type == ParseResult._MANGA
+        check_item = isinstance(res.item, Manga)
+        self.assertTrue(check_type and check_item)
 
         # tests chapter url parsing
         res = self.mangadex.parse_url(CHAPT_URL)
-        check = res["type"] == "chapter" and isinstance(res["item"], Chapter)
-        self.assertTrue(check)
+        check_type = res.type == ParseResult._CHAPTER
+        check_item = isinstance(res.item, Chapter)
+        self.assertTrue(check_type and check_item)
     # end_test_parse
 
     def test_search(self):
         query = "Umineko Tsubasa"
         res = self.mangadex.search(query, 1, prompt_tag=False)
 
+        # ensures output is a SearchResult object
+        self.assertTrue(isinstance(res, SearchResult))
+
         # checks all items in manga_list is a models.Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and
-                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
+                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res.manga_list)
         self.assertTrue(all_manga)
 
         # checks last_page value is a boolean
-        self.assertTrue(isinstance(res["last_page"], bool))
+        self.assertTrue(isinstance(res.last_page, bool))
     # end_test_search
 
     def test_get_manga_info(self):

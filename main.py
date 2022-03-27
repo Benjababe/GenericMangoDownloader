@@ -1,7 +1,7 @@
 # standard libraries
 import argparse
 import sys
-from models import Manga
+from models import Manga, Extension, ParseResult
 
 # local files
 import core
@@ -23,7 +23,7 @@ ext_dict = {
 
 
 # keeps the active extension
-ext_active = None
+ext_active: Extension = None
 
 
 def main_parse_url(url: str):
@@ -39,15 +39,15 @@ def main_parse_url(url: str):
 
     global ext_active
 
-    parsed_url = ext_active.parse_url(url)
+    parse_result = ext_active.parse_url(url)
 
     # if type is manga, output should be a dict with keys "title" and "manga_id"
-    if parsed_url["type"] == "manga":
-        main_get_manga_info(parsed_url["item"])
+    if parse_result.type == ParseResult._MANGA:
+        main_get_manga_info(parse_result.item)
 
     # if type is chapter, output should be a regular chapter object
-    elif parsed_url["type"] == "chapter":
-        core.download_chapters(ext_active, [parsed_url["item"]])
+    elif parse_result.type == ParseResult._CHAPTER:
+        core.download_chapters(ext_active, [parse_result.item])
 # end_parse_url
 
 

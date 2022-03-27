@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 # local files
-from models import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag, SearchResult, ParseResult
 import extensions.nhentai.account as account
 import extensions.nhentai.gallery as gallery
 import core
@@ -73,7 +73,7 @@ class NHentai(Extension):
 
             manga_list.append(manga)
 
-        return {"manga_list": manga_list, "last_page": last_page}
+        return SearchResult(manga_list, last_page)
     # end_search
 
     def get_manga_info(self, manga: Manga):

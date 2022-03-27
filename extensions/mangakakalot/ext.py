@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 # local files
-from models import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag, ParseResult, SearchResult
 
 NAME = "mangakakalot"
 
@@ -15,7 +15,7 @@ NAME = "mangakakalot"
 class Mangakakalot(Extension):
     session = requests.Session()
 
-    def parse_url(self, query: str) -> dict:
+    def parse_url(self, query: str) -> ParseResult:
         return super().parse_url(query)
 
     # search_len is unapplicable here
@@ -60,7 +60,7 @@ class Mangakakalot(Extension):
 
             manga_list.append(manga)
 
-        return {"manga_list": manga_list, "last_page": last_page}
+        return SearchResult(manga_list, last_page)
     # end_search
 
     def get_manga_info(self, manga: Manga):

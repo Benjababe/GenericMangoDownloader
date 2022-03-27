@@ -1,22 +1,19 @@
 import json
 from typing import Dict
 
-from models import Manga, Chapter
+from models import Manga, Chapter, ParseResult
 
 API_URL = "https://api.mangadex.org"
 
 
-def parse_url(self, url: str) -> Dict:
+def parse_url(self, url: str) -> ParseResult:
     """Feeds URL into parser for either manga or chapter page
 
     Args:
         url (str): URL given by user
 
     Returns:
-        Dict: {
-            "type": ("manga"|"chapter"),
-            "item": Manga or models.Chapter object
-        }
+        ParseResult: ParseResult object containing information on parsed webpage
     """
     MANGA_TEMPLATE = "https://mangadex.org/title/"
     CHAPTER_TEMPLATE = "https://mangadex.org/chapter/"
@@ -34,14 +31,14 @@ def parse_url(self, url: str) -> Dict:
 # end_parse_url
 
 
-def parse_url_manga(self, manga_id: str) -> dict:
-    """Parses manga url string and returns dict for type manga
+def parse_url_manga(self, manga_id: str) -> ParseResult:
+    """Parses manga url string and returns ParseResult object for type manga
 
     Args:
         manga_id (str): Manga ID
 
     Returns:
-        dict: Dict for type manga
+        ParseResult: ParseResult object for type manga
     """
 
     manga_info_url = f"{API_URL}/manga/{manga_id}"
@@ -54,21 +51,18 @@ def parse_url_manga(self, manga_id: str) -> dict:
     manga.title = data["data"]["attributes"]["title"][self.language]
     manga.id = manga_id
 
-    return {
-        "type": "manga",
-        "item": manga
-    }
+    return ParseResult(ParseResult._MANGA, manga)
 # end_parse_url_manga
 
 
-def parse_url_chapter(self, chapter_id: str) -> dict:
-    """Parses chapter url string and returns dict for type chapter
+def parse_url_chapter(self, chapter_id: str) -> ParseResult:
+    """Parses chapter url string and returns ParseResult object for type chapter
 
     Args:
         chapter_id (str): Chapter ID
 
     Returns:
-        dict: Dict for type chapter
+        ParseResult: ParseResult object for type chapter
     """
 
     chapter_info_url = f"{API_URL}/chapter/{chapter_id}"
@@ -96,8 +90,5 @@ def parse_url_chapter(self, chapter_id: str) -> dict:
             chapter.manga_title = data["attributes"]["title"][chapter_lang]
             chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
 
-    return {
-        "type": "chapter",
-        "item": chapter
-    }
+    return ParseResult(ParseResult._CHAPTER, chapter)
 # end_parse_url_chapter

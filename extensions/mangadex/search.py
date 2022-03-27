@@ -3,11 +3,12 @@ import requests
 from typing import Dict, List
 
 from models import Manga, Tag
+from models.results import SearchResult
 
 API_URL = "https://api.mangadex.org"
 
 
-def search(self, query: str, page: int, cover: bool = False, search_tags: List[str] = []) -> Dict:
+def search(self, query: str, page: int, cover: bool = False, search_tags: List[str] = []) -> SearchResult:
     # only show 10 manga in search results at a time
     search_len = 10
     search_url = f"{API_URL}/manga"
@@ -53,7 +54,7 @@ def search(self, query: str, page: int, cover: bool = False, search_tags: List[s
         # end_if
         manga_list.append(manga)
 
-    return {"manga_list": manga_list, "last_page": last_page}
+    return SearchResult(manga_list, last_page)
 # end_search
 
 

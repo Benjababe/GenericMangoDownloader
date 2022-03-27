@@ -1,3 +1,6 @@
+from typing import List
+
+
 class Manga():
     """
     This is the basic Manga class to be used to obtain chapters.
@@ -8,12 +11,14 @@ class Manga():
         """Constructor for Manga class
 
         """
+
+        super().__init__()
         self.title: str = ""
         self.id: str = ""
         self.cover_url: str = ""
         self.description: str = ""
-        self.tags: list[Tag] = []
-        self.chapters: list[Chapter] = []
+        self.tags: List[Tag] = []
+        self.chapters: List[Chapter] = []
 
     def add_attribute(self, name: str, value: str):
         setattr(self, name, value)
@@ -34,14 +39,14 @@ class Chapter():
         """
 
         self.pre_download = pre_download
-        self.number = ""
-        self.id = ""
-        self.title = ""
-        self.scanlator = ""
-        self.date = ""
-        self.manga_title = ""
-        self.foldername = ""
-        self.page_urls = []
+        self.number: str = ""
+        self.id: str = ""
+        self.title: str = ""
+        self.scanlator: str = ""
+        self.date: str = ""
+        self.manga_title: str = ""
+        self.foldername: str = ""
+        self.page_urls: List[str] = []
 
         # headers for http request if the site's a fucking piece of shit
         self.headers = {}
@@ -55,6 +60,7 @@ class Chapter():
             value (str): Value of new attribute
         """
         setattr(self, name, value)
+    # end_add_attribute
 # end_Chapter
 
 

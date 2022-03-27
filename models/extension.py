@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from models import Manga
+from models.results import ParseResult, SearchResult
 
 
 class Extension(ABC):
@@ -10,9 +11,8 @@ class Extension(ABC):
     Ensure all methods that can be implemented are done so
     """
 
-    # TODO return a ParseResult class instead of a generic dict
     @abstractmethod
-    def parse_url(self, query: str) -> dict:
+    def parse_url(self, query: str) -> ParseResult:
         """Checks URL string whether it is a manga or chapter page
 
         Args:
@@ -22,18 +22,15 @@ class Extension(ABC):
             NotImplementedError: When method isn't implemented by the subclass
 
         Returns:
-            dict: {
-                "type": "manga" or "chapter",
-                "item": models.Manga object or models.Chapter object depending on type value
-            }
+            ParseResult: ParseResult object containing information on parsed webpage
         """
 
         msg = "parse_url method has not been implemented"
         raise NotImplementedError(msg)
+    # end_parse_url
 
-    # TODO return a new SearchResult class instead of a generic dict
     @abstractmethod
-    def search(self, query: str, page: int, cover: bool = False) -> dict:
+    def search(self, query: str, page: int, cover: bool = False) -> SearchResult:
         """Search the extension's website using the query string
 
         Args:
@@ -45,14 +42,12 @@ class Extension(ABC):
             NotImplementedError: When method isn't implemented by the subclass
 
         Returns:
-            dict: {
-                "manga_list": [...models.Manga object with only id and title attributes populated]
-                "last_page":  Boolean flag to indicate whether it's the last page
-            }
+            SearchResult: SearchResult object containing manga search results
         """
 
         msg = "search method has not been implemented"
         raise NotImplementedError(msg)
+    # end_search
 
     @abstractmethod
     def get_manga_info(self, manga: Manga) -> Manga:
@@ -70,6 +65,7 @@ class Extension(ABC):
 
         msg = "get_manga_info method has not been implemented"
         raise NotImplementedError(msg)
+    # end_get_manga_info
 
     @abstractmethod
     def get_random(self) -> Manga:
@@ -84,6 +80,7 @@ class Extension(ABC):
 
         msg = "get_random method has not been implemented"
         raise NotImplementedError(msg)
+    # end_get_random
 
     @abstractmethod
     def arg_handler(self, args: List[str]):
@@ -98,4 +95,5 @@ class Extension(ABC):
 
         msg = "arg_handler method has not been implemented"
         raise NotImplementedError(msg)
+    # end_arg_handler
 # end_Extension

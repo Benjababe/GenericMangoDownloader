@@ -3,7 +3,7 @@ import unittest
 
 import core
 import extensions.mangakakalot.ext as mangakakalotExt
-from models import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag, SearchResult, ParseResult
 
 
 # testing methods defined in Mangakakalot class
@@ -18,13 +18,16 @@ class TestExtension(unittest.TestCase):
         query = "Umineko Tsubasa"
         res = self.mangakakalot.search(query, 1)
 
+        # ensures output is a SearchResult object
+        self.assertTrue(isinstance(res, SearchResult))
+
         # checks all items in manga_list is a models.Manga object
         all_manga = all(isinstance(manga, Manga) and
-                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
-        self.assertTrue(all_manga and isinstance(res["last_page"], bool))
+                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res.manga_list)
+        self.assertTrue(all_manga and isinstance(res.last_page, bool))
 
         # checks last_page value is a boolean
-        self.assertTrue(isinstance(res["last_page"], bool))
+        self.assertTrue(isinstance(res.last_page, bool))
     # end_test_search
 
     def test_get_manga_info(self):

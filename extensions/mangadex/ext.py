@@ -1,6 +1,6 @@
 # standard libraries
 import json
-from typing import Dict, List
+from typing import List
 import requests
 from datetime import datetime
 
@@ -10,6 +10,7 @@ import extensions.mangadex.account as account
 import extensions.mangadex.search as search
 import extensions.mangadex.parse as parse
 import core
+from models.results import SearchResult
 
 NAME = "mangadex"
 API_URL = "https://api.mangadex.org"
@@ -40,12 +41,13 @@ class Mangadex(Extension):
         # to mark chapter as read upon downloading or not
         stored_mark = core.read_pickle("mangadex", "mark_on_dl")
         self.mark_on_dl = stored_mark if stored_mark else False
+    # end__init__
 
     def parse_url(self, url: str):
         return parse.parse_url(self, url)
     # end_parse_url
 
-    def search(self, query: str, page: int, cover: bool = False, prompt_tag=True) -> Dict:
+    def search(self, query: str, page: int, cover: bool = False, prompt_tag=True):
         # if tag search, ask for tags only once and save it locally
         if prompt_tag and self.tags == None:
             self.tags = search.query_tags(self.session)
@@ -190,7 +192,7 @@ class Mangadex(Extension):
         return manga
     # end_get_random
 
-    def arg_handler(self, args: list) -> None:
+    def arg_handler(self, args: List[str]) -> None:
         # pairs argument with its corresponding function
         arg_handlers = {
             "-L": account.login,

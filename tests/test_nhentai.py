@@ -3,7 +3,7 @@ import unittest
 
 import core
 import extensions.nhentai.ext as nhentai
-from models import Chapter, Manga, Tag
+from models import Chapter, Manga, Tag, SearchResult, ParseResult
 
 
 class TestExtension(unittest.TestCase):
@@ -15,13 +15,16 @@ class TestExtension(unittest.TestCase):
         query = "Umineko"
         res = self.nhentai.search(query, 1)
 
+        # ensures output is a SearchResult object
+        self.assertTrue(isinstance(res, SearchResult))
+
         # checks all items in manga_list is a models.Manga object and attributes are populated
         all_manga = all(isinstance(manga, Manga) and
-                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res["manga_list"])
+                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res.manga_list)
         self.assertTrue(all_manga)
 
         # checks last_page value is a boolean
-        self.assertTrue(isinstance(res["last_page"], bool))
+        self.assertTrue(isinstance(res.last_page, bool))
     # end_test_search
 
     def test_get_manga_info(self):

@@ -20,22 +20,21 @@ def search(ext_active: Extension, query: str) -> Manga:
     while manga == None:
         # first retrieves list of manga from search query
         search_res = ext_active.search(query, search_page)
-        manga_list = search_res["manga_list"]
 
-        if len(manga_list) == 0:
+        if len(search_res.manga_list) == 0:
             print("There are 0 results for your search query. Exiting...")
             return
 
         print(f"Search results for '{query}' page {search_page}:")
 
-        for i in range(len(manga_list)):
-            print(f"{i+1}. {manga_list[i].title}")
+        for i in range(search_res.length):
+            print(f"{i+1}. {search_res.manga_list[i].title}")
 
         reinput = True
 
         # keep asking until a manga selection is made, flagged by reinput
         while reinput:
-            max_num = len(manga_list)
+            max_num = len(search_res.manga_list)
             query_str = f"Which manga do you wish to download (1-{max_num}, < or > to move search page, q to quit): "
             page_index_in = (input(query_str) or "q").strip()
 
@@ -69,7 +68,7 @@ def search(ext_active: Extension, query: str) -> Manga:
             elif page_index_in.isdigit():
                 page_index_in = int(page_index_in) - 1
 
-                if page_index_in < 0 or page_index_in >= len(manga_list):
+                if page_index_in < 0 or page_index_in >= search_res.length:
                     print("Index out of range of search results")
                 else:
                     reinput = False
@@ -79,8 +78,8 @@ def search(ext_active: Extension, query: str) -> Manga:
                 print("Invalid input")
 
         # only choose manga if valid index is input via user
-        if page_index_in >= 0 and page_index_in < len(manga_list):
-            manga = manga_list[page_index_in]
+        if page_index_in >= 0 and page_index_in < len(search_res.manga_list):
+            manga = search_res.manga_list[page_index_in]
             print(f"You chose: '{manga.title}'")
 
     return manga

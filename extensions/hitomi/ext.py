@@ -3,7 +3,7 @@ from typing import List
 import requests
 
 # local files
-from models import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag, SearchResult, ParseResult
 import core
 
 import extensions.hitomi.parse as parse
@@ -29,18 +29,22 @@ class Hitomi(Extension):
             return None
 
         chapter = parse.parse_gallery(self, query)
-        return {"type": "chapter", "item": chapter}
+        return ParseResult(ParseResult._CHAPTER, chapter)
     # end_parse_url
 
-    def search(self, query: str, page: int, cover: bool = False) -> dict:
-        return {}
+    def search(self, query: str, page: int, cover: bool = False) -> SearchResult:
+        return SearchResult(None, None)
+    # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:
         return Manga(pre_download=False)
+    # end_get_manga_info
 
     def get_random(self) -> Manga:
         return Manga(pre_download=False)
+    # end_get_random
 
     def arg_handler(self, args: List[str]):
         return
+    # end_arg_handler
 # end_Hitomi_class
