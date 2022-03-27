@@ -1,25 +1,30 @@
 import os
+import re
 import unittest
 
 import core.download as download
 from models import Chapter
 
 
+ext_pattern = "^.*\.(\w+){1}$"
+
+
 class TestDownload(unittest.TestCase):
     def setUp(self) -> None:
-        self.URL = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_100kB.jpg"
+        self.URL = "https://filesamples.com/samples/image/jpeg/sample_640%C3%97426.jpeg"
         self.PATH = "./downloads/unittest"
+        self.EXTENSION = re.search(ext_pattern, self.URL).group(1)
         return super().setUp()
     # end_setUp
 
     def test_single_download(self):
         download.download_page(self.URL, self.PATH, 1)
-        check = os.path.exists(f"{self.PATH}/1.jpg")
+        check = os.path.exists(f"{self.PATH}/1.{self.EXTENSION}")
         self.assertTrue(check)
     # end_test_single_download
 
     def tearDown(self) -> None:
-        os.remove(f"{self.PATH}/1.jpg")
+        os.remove(f"{self.PATH}/1.{self.EXTENSION}")
         os.rmdir(self.PATH)
         return super().tearDown()
     # end_tearDown
@@ -29,9 +34,10 @@ class TestDownload(unittest.TestCase):
 
 class TestAsyncDownload(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.URL1 = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_100kB.jpg"
-        self.URL2 = "https://file-examples.com/storage/fe5a75816e623e09397bcfa/2017/10/file_example_JPG_500kB.jpg"
+        self.URL1 = "https://filesamples.com/samples/image/jpeg/sample_640%C3%97426.jpeg"
+        self.URL2 = "https://filesamples.com/samples/image/jpeg/sample_1280%C3%97853.jpeg"
         self.PATH = "./downloads/unittest"
+        self.EXTENSION = re.search(ext_pattern, self.URL1).group(1)
         return super().setUp()
     # end_setUp
 
@@ -46,14 +52,14 @@ class TestAsyncDownload(unittest.IsolatedAsyncioTestCase):
         await download.download_chapter_async(chapter)
 
         # ensures all 10 files are downloaded
-        check = all(os.path.exists(f"{self.PATH}/{i}.jpg")
+        check = all(os.path.exists(f"{self.PATH}/{i}.{self.EXTENSION}")
                     for i in range(1, 11))
         self.assertTrue(check)
     # end_test_multi_download
 
     def tearDown(self) -> None:
         for i in range(1, 11):
-            os.remove(f"{self.PATH}/{i}.jpg")
+            os.remove(f"{self.PATH}/{i}.{self.EXTENSION}")
         os.rmdir(self.PATH)
         return super().tearDown()
     # end_tearDown
