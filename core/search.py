@@ -52,7 +52,7 @@ def search(ext_active: Extension, query: str) -> Manga:
                     continue
 
                 # incrementing page when last page is reached
-                elif search_res["last_page"] and page_index_in == ">":
+                elif search_res.last_page and page_index_in == ">":
                     page_index_in = -1
                     print("You can't go to a next page")
                     continue
