@@ -96,33 +96,6 @@ def main_get_manga_info(manga: Manga):
 # end_main_get_manga_info
 
 
-parser = argparse.ArgumentParser(
-    formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=100))
-
-# extension argument parsing
-parser.add_argument(f"--{mangadexExt.NAME}", action="store_true",
-                    dest=f"{mangadexExt.NAME}", help="Sets active extension as MangaDex")
-parser.add_argument(f"--{mangakakalotExt.NAME}", action="store_true",
-                    dest=f"{mangadexExt.NAME}", help="Sets active extension as Mangakakalot")
-parser.add_argument(f"--{nhentaiExt.NAME}", action="store_true",
-                    dest=f"{mangadexExt.NAME}", help="Sets active extension as nHentai")
-parser.add_argument(f"--{hitomiExt.NAME}", action="store_true",
-                    dest=f"{hitomiExt.NAME}", help="Sets active extension as Hitomi.la")
-
-# standardised functions for every extension
-parser.add_argument("-S", "--search", metavar="query", dest="search",
-                    help="Calls the search function of the active extension")
-
-parser.add_argument("-RD", "--random", action="store_true", dest="random",
-                    help="Finds a random manga")
-
-parser.add_argument("-U", "--url", metavar="url", dest="parse_url",
-                    help="Retrieves manga/chapter directly from a provided URL")
-
-parser.add_argument("ext_args", nargs=argparse.REMAINDER,
-                    help="Reserved for extension's custom arguments, use after the reserved arguments")
-
-
 def check_extension():
     """Checks whether an active extension has been set
     """
@@ -135,12 +108,48 @@ def check_extension():
 # end_check_extension
 
 
+def generate_arg_parser() -> argparse.ArgumentParser:
+    """Generates argument parser to handle inputs
+
+    Returns:
+        argparse.ArgumentParser: Parser for main.py arguments
+    """
+    parser = argparse.ArgumentParser(
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=100))
+
+    # extension argument parsing
+    parser.add_argument(f"--{mangadexExt.NAME}", action="store_true",
+                        dest=f"{mangadexExt.NAME}", help="Sets active extension as MangaDex")
+    parser.add_argument(f"--{mangakakalotExt.NAME}", action="store_true",
+                        dest=f"{mangakakalotExt.NAME}", help="Sets active extension as Mangakakalot")
+    parser.add_argument(f"--{nhentaiExt.NAME}", action="store_true",
+                        dest=f"{nhentaiExt.NAME}", help="Sets active extension as nHentai")
+    parser.add_argument(f"--{hitomiExt.NAME}", action="store_true",
+                        dest=f"{hitomiExt.NAME}", help="Sets active extension as Hitomi.la")
+
+    # standardised functions for every extension
+    parser.add_argument("-S", "--search", metavar="query", dest="search",
+                        help="Calls the search function of the active extension")
+
+    parser.add_argument("-RD", "--random", action="store_true", dest="random",
+                        help="Finds a random manga")
+
+    parser.add_argument("-U", "--url", metavar="url", dest="parse_url",
+                        help="Retrieves manga/chapter directly from a provided URL")
+
+    parser.add_argument("ext_args", nargs=argparse.REMAINDER,
+                        help="Reserved for extension's custom arguments, use after the reserved arguments")
+
+    return parser
+
+
 def parse_arguments():
     """Parses arguments from argparse
     """
 
     global ext_active
 
+    parser = generate_arg_parser()
     args, unknown_args = parser.parse_known_args()
     args = args.__dict__
 
