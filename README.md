@@ -1,14 +1,14 @@
 |Build|
 |-----|
-|[![CI](https://github.com/Benjababe/NotCafeDownloader/workflows/CI/badge.svg?event=push)](https://github.com/Benjababe/NotCafeDownloader/actions/workflows/main.yml)|
+|[![CI](https://github.com/Benjababe/GenericMangoDownloader/workflows/CI/badge.svg?event=push)](https://github.com/Benjababe/GenericMangoDownloader/actions/workflows/main.yml)|
 
-# NotCafeDownloader
+# GenericMangoDownloader
 
 Initially only intended for cafe. Kinda expanded on its own and cafe sorta died.
 
 It actually works this time. At least on Python 3.8 and 3.9.
 
-Refer to the [wiki](https://github.com/Benjababe/NotCafeDownloader/wiki) for detailed use.
+Refer to the [wiki](https://github.com/Benjababe/GenericMangoDownloader/wiki) for detailed use.
 
 ## Prerequisites
 
