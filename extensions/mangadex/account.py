@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import requests
 
@@ -34,14 +35,7 @@ def login(session: requests.Session, username: str = "", password: str = "", mar
     data = json.loads(res.text)
 
     if data["result"] == "ok":
-        # saving session information into cookies
-        session.cookies.set(name="Login", value="true")
-        session.cookies.set(name="session", value=data["token"]["session"])
-        session.cookies.set(name="refresh", value=data["token"]["refresh"])
-        session.headers.update({"Authorization": data["token"]["session"]})
-
-        # saving current session into a pickle
-        core.write_pickle("mangadex", "session", session)
+        update_login_session(session, data)
         print("Successfully logged in as", username)
 
         if mark_on_dl == "":
@@ -60,6 +54,60 @@ def login(session: requests.Session, username: str = "", password: str = "", mar
 # end_login
 
 
+def check_login_session(session: requests.Session):
+    """Checks current session token expiry and refreshes if necessary
+
+    Args:
+        session (requests.Session): Session object used for HTTP requests
+    """
+    expires = -1
+    for cookie in session.cookies:
+        if cookie.name == "session":
+            expires = cookie.expires
+
+    if datetime.now().timestamp() > expires:
+        print("Login session expired, refreshing...")
+        refresh_token = session.cookies.get("refresh")
+        refresh_url = f"{API_URL}/auth/refresh"
+
+        res = session.post(refresh_url, json={
+            "token": refresh_token
+        })
+        res.close()
+        data = json.loads(res.text)
+
+        if data["result"] == "ok":
+            update_login_session(session, data)
+            print("Login session refreshed!")
+
+# end_check_login_session
+
+
+def update_login_session(session: requests.Session, data: dict):
+    """Update session information with MangaDex response on auth
+
+    Args:
+        session (requests.Session): Session object used for HTTP requests
+        data (dict): JSON containing session and refresh tokens
+    """
+
+    expiry = int(datetime.now().timestamp()) + 15 * 60000
+    session.cookies.set(name="Login", value="true")
+    session.cookies.set(
+        name="session",
+        value=data["token"]["session"],
+        expires=expiry
+    )
+    session.cookies.set(name="refresh", value=data["token"]["refresh"])
+    session.headers.update({
+        "Authorization": f"Bearer {data['token']['session']}"
+    })
+
+    # saving current session into a pickle
+    core.write_pickle("mangadex", "session", session)
+# end_update_login_session
+
+
 def toggle_data_saver(session: requests.Session):
     data_saver = core.read_pickle("mangadex", "data_saver")
     data_saver = not data_saver
@@ -75,19 +123,24 @@ def set_language(session: requests.Session, language: str):
 # end_set_language
 
 
-def mark_chapter_read(session: requests.Session, chapter_id: str) -> bool:
+def mark_chapter_read(session: requests.Session, manga_id: str, chapter_id: str) -> bool:
     """Marks chapter as read by chapter_id parameter given
 
     Args:
         session (requests.Session): Session object that was used for login
+        manga_id (str): Manga containing the chapter
         chapter_id (str): Chapter ID to be marked as read
 
     Returns:
         bool: Boolean flag to indicate whether marking was successful or not 
     """
+    check_login_session(session)
 
-    mark_url = f"{API_URL}/chapter/{chapter_id}/read"
-    res = session.post(mark_url)
+    mark_url = f"{API_URL}/manga/{manga_id}/read"
+
+    res = session.post(mark_url, json={
+        "chapterIdsRead": [chapter_id]
+    })
     res.close()
 
     if res.ok:
@@ -97,19 +150,24 @@ def mark_chapter_read(session: requests.Session, chapter_id: str) -> bool:
 # end_mark_chapter
 
 
-def mark_chapter_unread(session: requests.Session, chapter_id: str) -> bool:
+def mark_chapter_unread(session: requests.Session, manga_id: str, chapter_id: str) -> bool:
     """Marks chapter as unread by chapter_id parameter given
 
     Args:
         session (requests.Session): Session object that was used for login
+        manga_id (str): Manga containing the chapter
         chapter_id (str): Chapter ID to be marked as unread
 
     Returns:
         bool: Boolean flag to indicate whether marking was successful or not 
     """
+    check_login_session(session)
 
-    mark_url = f"{API_URL}/chapter/{chapter_id}/read"
-    res = session.delete(mark_url)
+    mark_url = f"{API_URL}/manga/{manga_id}/read"
+
+    res = session.post(mark_url, json={
+        "chapterIdsUnread": [chapter_id]
+    })
     res.close()
 
     if res.ok:
@@ -131,6 +189,7 @@ def update_reading_status(session: requests.Session, manga_id: str, status_index
     Returns:
         bool: Boolean flag to indicate whether marking was successful or not 
     """
+    check_login_session(session)
 
     msg = "Enter manga status:\n1.Reading\n2.On hold\n3.Plan to read\n4.Dropped\n5.Re-reading\n6.Completed\n:"
     while status_index < 0 or status_index > 5:

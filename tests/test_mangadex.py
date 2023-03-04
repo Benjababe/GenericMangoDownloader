@@ -190,9 +190,11 @@ class TestAccount(unittest.TestCase):
     def test_mark_chapter(self):
         # mark chapter read and unread
         # Umineko Tsubasa Ch. 1
+        MANGA_ID = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         CHAPTER_ID = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
-        marked = account.mark_chapter_read(self.session, CHAPTER_ID)
-        unmarked = account.mark_chapter_unread(self.session, CHAPTER_ID)
+        marked = account.mark_chapter_read(self.session, MANGA_ID, CHAPTER_ID)
+        unmarked = account.mark_chapter_unread(
+            self.session, MANGA_ID, CHAPTER_ID)
 
         self.assertTrue(marked and unmarked)
     # end_test_mark_chapter
