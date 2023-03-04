@@ -1,5 +1,4 @@
 import json
-from typing import Dict
 
 from models import Manga, Chapter, ParseResult
 

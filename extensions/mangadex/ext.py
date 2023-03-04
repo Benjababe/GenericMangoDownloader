@@ -5,12 +5,11 @@ import requests
 from datetime import datetime
 
 # local files
-from models import Chapter, Extension, Manga, Tag
+from models import Chapter, Extension, Manga, Tag, ParseResult
 import extensions.mangadex.account as account
 import extensions.mangadex.search as search
 import extensions.mangadex.parse as parse
 import core
-from models.results import SearchResult
 
 NAME = "mangadex"
 API_URL = "https://api.mangadex.org"
@@ -43,7 +42,7 @@ class Mangadex(Extension):
         self.mark_on_dl = stored_mark if stored_mark else False
     # end__init__
 
-    def parse_url(self, url: str):
+    def parse_url(self, url: str) -> ParseResult:
         return parse.parse_url(self, url)
     # end_parse_url
 
