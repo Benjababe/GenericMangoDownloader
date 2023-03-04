@@ -68,6 +68,15 @@ class Mangakakalot(Extension):
         res.close()
         soup = BeautifulSoup(res.text, "html.parser")
 
+        if re.fullmatch(r"https:\/\/mangakakalot\.com\/manga\/\w+", res.url):
+            manga = self.get_manga_info_mangakakalot(soup, manga)
+        elif re.fullmatch(r"https:\/\/chapmanganato\.com\/manga-\w+", res.url):
+            manga = self.get_manga_info_chapmanganato(soup, manga)
+
+        return manga
+    # end_get_manga_info
+
+    def get_manga_info_mangakakalot(self, soup: BeautifulSoup, manga: Manga):
         description = soup.find("div", {"id": "noidungm"})
         description = description.contents[2].strip()
 
@@ -92,7 +101,7 @@ class Mangakakalot(Extension):
         chapter_list_dom = soup.find("div", "chapter-list")
 
         for chapter_item in chapter_list_dom.find_all("div", "row"):
-            chapter = self.get_chapter(chapter_item)
+            chapter = self.get_chapter_mangakakalot(chapter_item)
             chapter.manga_title = manga.title
             manga.chapters.append(chapter)
 
@@ -100,10 +109,44 @@ class Mangakakalot(Extension):
         manga.tags = tags
 
         return manga
-    # end_get_manga_info
+    # end_get_manga_info_mangakakalot
 
-    def get_chapter(self, chapter_item: bs4.element.Tag) -> Chapter:
-        """Generates models.Chapter object with attributes populated
+    def get_manga_info_chapmanganato(self, soup: BeautifulSoup, manga: Manga):
+        description = soup.find("div", {"id": "panel-story-info-description"})
+        description = description.contents[2].strip()
+
+        tags = []
+        labels = soup.find_all("td", {"class": "table-label"})
+
+        for label in labels:
+            if re.match(r"Genres\s:", label.text):
+                genre_values = label.find_next_sibling(
+                    "td", {"class": "table-value"})
+
+                for tag in genre_values.children:
+                    if isinstance(tag, bs4.element.Tag):
+                        tags.append(Tag(
+                            tag.string,
+                            tag["href"]
+                        ))
+
+        chapter_list_dom = soup.find("ul", {"class": "row-content-chapter"})
+
+        for chapter_item in chapter_list_dom.find_all("li", {"class": "a-h"}):
+            chapter = self.get_chapter_chapmanganato(chapter_item)
+            chapter.manga_title = manga.title
+            manga.chapters.append(chapter)
+
+        manga.description = description
+        manga.tags = tags
+
+        return manga
+    # end_get_manga_info_chapmanganato
+
+    def get_chapter_mangakakalot(self, chapter_item: bs4.element.Tag) -> Chapter:
+        """
+        Generates models.Chapter object with attributes populated
+        Method specific for mangakakalot
 
         Args:
             chapter_item (bs4.element.Tag): HTML element for chapter
@@ -111,20 +154,19 @@ class Mangakakalot(Extension):
         Returns:
             Chapter: models.Chapter object with attributes populated
         """
+        chapter = Chapter(pre_download=True)
 
         chapter_name = chapter_item.find("a")
         chapter_time = chapter_item.contents[-2]
 
-        chapter = Chapter(pre_download=True)
-
-        chapter_num_pattern = r"Chapter ([0-9.]+)"
+        chapter_num_pattern = r"Chapter ([0-9\.]+)"
         matched = re.search(chapter_num_pattern,
                             chapter_name["title"], flags=re.IGNORECASE)
         chapter.number = matched.group(1)
 
         # ID will be page 1 of chapter, will be used in pre_download
         chapter.id = chapter_name["href"]
-        chapter.date = chapter_time.string
+        chapter.date = chapter_time.text
 
         title = chapter_name["title"]
         # because chapter titles are formatted like
@@ -134,6 +176,39 @@ class Mangakakalot(Extension):
 
         return chapter
     # end_get_chapter
+
+    def get_chapter_chapmanganato(self, chapter_item: bs4.element.Tag) -> Chapter:
+        """
+        Generates models.Chapter object with attributes populated
+        Method specific for chapmanganato
+
+        Args:
+            chapter_item (bs4.element.Tag): HTML element for chapter
+
+        Returns:
+            Chapter: models.Chapter object with attributes populated
+        """
+        chapter = Chapter(pre_download=True)
+
+        chapter_name = chapter_item.find(class_="chapter-name")
+        chapter_time = chapter_item.find(class_="chapter-time")
+
+        chapter_num_pattern = r"Chapter ([0-9\.]+)"
+        matched = re.search(chapter_num_pattern,
+                            chapter_name["title"], flags=re.IGNORECASE)
+        chapter.number = matched.group(1)
+
+        # ID will be page 1 of chapter, will be used in pre_download
+        chapter.id = chapter_name["href"]
+        chapter.date = chapter_time["title"]
+
+        title = chapter_name["title"]
+        # because chapter titles are formatted like
+        # Chapter <chapter_num> : <chapter_title>
+        if ":" in title:
+            chapter.title = title[title.index(":")+1:].strip()
+
+        return chapter
 
     def pre_download(self, chapter: Chapter) -> Chapter:
         """Preprocessing done before chapter download, retrieves full url for page downloads and sets cloudflare headers
@@ -199,7 +274,7 @@ def generate_headers(chapter: Chapter) -> dict:
         "sec-fetch-mode": "no-cors",
         "sec-fetch-site": "cross-site",
         "sec-gpc": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.115 Safari/537.36"
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
     }
 
     return cf_headers

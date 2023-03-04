@@ -40,7 +40,8 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
         print(foldername)
 
     while True:
-        query_str = f"Which chapters do you wish to download (1-{manga_info.chapters[-1].number}, q to quit): "
+        chapter_range = f"{manga_info.chapters[0].number}-{manga_info.chapters[-1].number}"
+        query_str = f"Which chapters do you wish to download ({chapter_range}, q to quit): "
         to_download = (input(query_str).lower().strip() or "q")
 
         if to_download == "q":
