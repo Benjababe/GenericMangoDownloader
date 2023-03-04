@@ -69,7 +69,7 @@ class TestExtension(unittest.TestCase):
         manga.id = "https://mangakakalot.com/manga/umineko_no_naku_koro_ni_tsubasa"
         manga = self.mangakakalot.get_manga_info(manga)
 
-        # downloads only 1 chapter
+        # downloads only chapter 1
         chapter = list(filter(lambda x: x.number == '1', manga.chapters))[0]
         chapter = self.mangakakalot.pre_download(chapter)
 

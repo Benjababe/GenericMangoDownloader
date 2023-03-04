@@ -68,9 +68,9 @@ class Mangakakalot(Extension):
         res.close()
         soup = BeautifulSoup(res.text, "html.parser")
 
-        if re.fullmatch(r"https:\/\/mangakakalot\.com\/[\w-]+", res.url):
+        if re.fullmatch(r"https:\/\/mangakakalot\.com\/[\w\/-]+", res.url):
             manga = self.get_manga_info_mangakakalot(soup, manga)
-        elif re.fullmatch(r"https:\/\/chapmanganato\.com\/[\w-]+", res.url):
+        elif re.fullmatch(r"https:\/\/chapmanganato\.com\/[\w\/-]+", res.url):
             manga = self.get_manga_info_chapmanganato(soup, manga)
 
         return manga
