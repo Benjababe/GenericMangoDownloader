@@ -40,11 +40,9 @@ class Mangadex(Extension):
         # to mark chapter as read upon downloading or not
         stored_mark = core.read_pickle("mangadex", "mark_on_dl")
         self.mark_on_dl = stored_mark if stored_mark else False
-    # end__init__
 
     def parse_url(self, url: str) -> ParseResult:
         return parse.parse_url(self, url)
-    # end_parse_url
 
     def search(self, query: str, page: int, cover: bool = False, prompt_tag=True):
         # if tag search, ask for tags only once and save it locally
@@ -52,7 +50,6 @@ class Mangadex(Extension):
             self.tags = search.query_tags(self.session)
 
         return search.search(self, query, page, cover, self.tags)
-    # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:
         manga_info_url = f"{API_URL}/manga/{manga.id}"
@@ -74,11 +71,14 @@ class Mangadex(Extension):
             manga.tags.append(Tag(name, id))
 
         # retrieves list of chapters for the current manga
-        res = self.session.get(chapter_list_url, params={
-            "manga": manga.id,
-            "limit": 100,
-            "translatedLanguage[]": self.language
-        })
+        res = self.session.get(
+            chapter_list_url,
+            params={
+                "manga": manga.id,
+                "limit": 100,
+                "translatedLanguage[]": self.language,
+            },
+        )
         res.close()
         data = res.json()["data"]
 
@@ -88,11 +88,9 @@ class Mangadex(Extension):
             manga.chapters.append(chapter)
 
         return manga
-    # end_get_manga_info
 
     def set_tags(self, tags: List[str]):
         self.tags = tags
-    # end_set_tags
 
     def get_chapter(self, res_results: dict) -> Chapter:
         """Returns models.Chapter object from API call results
@@ -116,7 +114,6 @@ class Mangadex(Extension):
         chapter.date = format_date(res_results["attributes"]["updatedAt"])
 
         return chapter
-    # end_get_chapter
 
     def get_scanlator(self, relationships: dict) -> str:
         """Retrieves scanlator name from chapter API call results
@@ -140,13 +137,11 @@ class Mangadex(Extension):
                     res.close()
                     tmp_data = json.loads(res.text)
 
-                    self.scanlators[scanlator_id] = tmp_data["data"]["attributes"]["name"]
-                # end_if_scanlator_id
+                    self.scanlators[scanlator_id] = tmp_data["data"]["attributes"][
+                        "name"
+                    ]
 
                 return self.scanlators[scanlator_id]
-            # end_if_rel_type
-        # end_for_rel
-    # end_get_scanlator
 
     # gets the full list of image urls before download
 
@@ -170,14 +165,16 @@ class Mangadex(Extension):
 
         # constructs full image url
         chapter.page_urls = [
-            f"{base_url}/{filename}" for filename in tmp_data["chapter"]["dataSaver" if self.data_saver else "data"]
+            f"{base_url}/{filename}"
+            for filename in tmp_data["chapter"][
+                "dataSaver" if self.data_saver else "data"
+            ]
         ]
 
         if self.mark_on_dl and self.session.cookies.get("Login"):
             account.mark_chapter_read(self.session, chapter.id)
 
         return chapter
-    # end_pre_download
 
     def get_random(self):
         res = self.session.get(f"{API_URL}/manga/random")
@@ -189,7 +186,6 @@ class Mangadex(Extension):
         manga.id = data["data"]["id"]
 
         return manga
-    # end_get_random
 
     def arg_handler(self, args: List[str]) -> None:
         # pairs argument with its corresponding function
@@ -204,7 +200,7 @@ class Mangadex(Extension):
             "--mark-read": account.mark_chapter_read,
             "-MU": account.mark_chapter_unread,
             "--mark-unread": account.mark_chapter_unread,
-            "--reading-status": account.update_reading_status
+            "--reading-status": account.update_reading_status,
         }
 
         for arg in args:
@@ -212,8 +208,6 @@ class Mangadex(Extension):
 
             if arg[0] in arg_handlers:
                 arg_handlers[arg.pop(0)](self.session, *arg)
-# end_arg_handler
-# end_Mangadex_class
 
 
 def format_date(upload_date: str) -> str:
@@ -228,4 +222,3 @@ def format_date(upload_date: str) -> str:
     upload_date = datetime.strptime(upload_date, "%Y-%m-%dT%H:%M:%S%z")
     upload_date = upload_date.strftime("%d/%m/%Y")
     return upload_date
-# end_get_formatted_date

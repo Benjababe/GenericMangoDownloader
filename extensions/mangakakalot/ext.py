@@ -36,8 +36,7 @@ class Mangakakalot(Extension):
             last_page = True
         else:
             paging_string = paging_elem.string.strip()
-            paging_string = re.search(
-                r"Last\(([0-9]+)\)", paging_string).group(1)
+            paging_string = re.search(r"Last\(([0-9]+)\)", paging_string).group(1)
             last_page = page >= int(paging_string)
 
         manga_list = []
@@ -61,7 +60,6 @@ class Mangakakalot(Extension):
             manga_list.append(manga)
 
         return SearchResult(manga_list, last_page)
-    # end_search
 
     def get_manga_info(self, manga: Manga):
         res = self.session.get(manga.id)
@@ -74,7 +72,6 @@ class Mangakakalot(Extension):
             manga = self.get_manga_info_chapmanganato(soup, manga)
 
         return manga
-    # end_get_manga_info
 
     def get_manga_info_mangakakalot(self, soup: BeautifulSoup, manga: Manga):
         description = soup.find("div", {"id": "noidungm"})
@@ -93,10 +90,7 @@ class Mangakakalot(Extension):
 
         for tag in tag_dom.contents:
             if isinstance(tag, bs4.element.Tag):
-                tags.append(Tag(
-                    tag.string,
-                    tag["href"]
-                ))
+                tags.append(Tag(tag.string, tag["href"]))
 
         chapter_list_dom = soup.find("div", "chapter-list")
 
@@ -109,7 +103,6 @@ class Mangakakalot(Extension):
         manga.tags = tags
 
         return manga
-    # end_get_manga_info_mangakakalot
 
     def get_manga_info_chapmanganato(self, soup: BeautifulSoup, manga: Manga):
         description = soup.find("div", {"id": "panel-story-info-description"})
@@ -120,15 +113,11 @@ class Mangakakalot(Extension):
 
         for label in labels:
             if re.match(r"Genres\s:", label.text):
-                genre_values = label.find_next_sibling(
-                    "td", {"class": "table-value"})
+                genre_values = label.find_next_sibling("td", {"class": "table-value"})
 
                 for tag in genre_values.children:
                     if isinstance(tag, bs4.element.Tag):
-                        tags.append(Tag(
-                            tag.string,
-                            tag["href"]
-                        ))
+                        tags.append(Tag(tag.string, tag["href"]))
 
         chapter_list_dom = soup.find("ul", {"class": "row-content-chapter"})
 
@@ -141,7 +130,6 @@ class Mangakakalot(Extension):
         manga.tags = tags
 
         return manga
-    # end_get_manga_info_chapmanganato
 
     def get_chapter_mangakakalot(self, chapter_item: bs4.element.Tag) -> Chapter:
         """
@@ -160,8 +148,9 @@ class Mangakakalot(Extension):
         chapter_time = chapter_item.contents[-2]
 
         chapter_num_pattern = r"Chapter ([0-9\.]+)"
-        matched = re.search(chapter_num_pattern,
-                            chapter_name["title"], flags=re.IGNORECASE)
+        matched = re.search(
+            chapter_num_pattern, chapter_name["title"], flags=re.IGNORECASE
+        )
         chapter.number = matched.group(1)
 
         # ID will be page 1 of chapter, will be used in pre_download
@@ -172,10 +161,9 @@ class Mangakakalot(Extension):
         # because chapter titles are formatted like
         # Chapter <chapter_num> : <chapter_title>
         if ":" in title:
-            chapter.title = title[title.index(":")+1:].strip()
+            chapter.title = title[title.index(":") + 1 :].strip()
 
         return chapter
-    # end_get_chapter
 
     def get_chapter_chapmanganato(self, chapter_item: bs4.element.Tag) -> Chapter:
         """
@@ -194,8 +182,9 @@ class Mangakakalot(Extension):
         chapter_time = chapter_item.find(class_="chapter-time")
 
         chapter_num_pattern = r"Chapter ([0-9\.]+)"
-        matched = re.search(chapter_num_pattern,
-                            chapter_name["title"], flags=re.IGNORECASE)
+        matched = re.search(
+            chapter_num_pattern, chapter_name["title"], flags=re.IGNORECASE
+        )
         chapter.number = matched.group(1)
 
         # ID will be page 1 of chapter, will be used in pre_download
@@ -206,7 +195,7 @@ class Mangakakalot(Extension):
         # because chapter titles are formatted like
         # Chapter <chapter_num> : <chapter_title>
         if ":" in title:
-            chapter.title = title[title.index(":")+1:].strip()
+            chapter.title = title[title.index(":") + 1 :].strip()
 
         return chapter
 
@@ -235,17 +224,12 @@ class Mangakakalot(Extension):
         chapter.headers = generate_headers(chapter)
 
         return chapter
-    # end_pre_download
 
     def get_random(self):
         return
-    # end_get_random
 
     def arg_handler(self, args: List[str]):
         return
-    # end_arg_handler
-
-# end_Mangakakalot_class
 
 
 def generate_headers(chapter: Chapter) -> dict:
@@ -255,7 +239,7 @@ def generate_headers(chapter: Chapter) -> dict:
         chapter (Chapter): models.Chapter object to be downloaded
 
     Returns:
-        dict: Headers to be used with cloudflare scraper 
+        dict: Headers to be used with cloudflare scraper
     """
 
     temp_host_url = urlparse(chapter.id)
@@ -274,8 +258,7 @@ def generate_headers(chapter: Chapter) -> dict:
         "sec-fetch-mode": "no-cors",
         "sec-fetch-site": "cross-site",
         "sec-gpc": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
     }
 
     return cf_headers
-# end_generate_headers

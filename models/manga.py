@@ -1,16 +1,14 @@
 from typing import List
 
 
-class Manga():
+class Manga:
     """
     This is the basic Manga class to be used to obtain chapters.
     Any attributes not included can be added via the extension itself with add_attribute.
     """
 
     def __init__(self):
-        """Constructor for Manga class
-
-        """
+        """Constructor for Manga class"""
 
         super().__init__()
         self.title: str = ""
@@ -22,10 +20,9 @@ class Manga():
 
     def add_attribute(self, name: str, value: str):
         setattr(self, name, value)
-# end_Manga
 
 
-class Chapter():
+class Chapter:
     """
     This is the basic Chapter class to be used for downloading
     Any attributes not included can be added via the extension itself with add_attribute
@@ -60,13 +57,10 @@ class Chapter():
             value (str): Value of new attribute
         """
         setattr(self, name, value)
-    # end_add_attribute
-# end_Chapter
 
 
-class Tag():
-    """This is the basic Tag class for manga tags, could be used for a GUI in the future
-    """
+class Tag:
+    """This is the basic Tag class for manga tags, could be used for a GUI in the future"""
 
     def __init__(self, name: str, id: str):
         """Constructor for Tag class
@@ -78,4 +72,3 @@ class Tag():
 
         self.name = name
         self.id = id
-# end_Tag

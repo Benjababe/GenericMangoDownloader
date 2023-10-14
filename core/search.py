@@ -38,7 +38,7 @@ def search(ext_active: Extension, query: str) -> Manga:
             query_str = f"Which manga do you wish to download (1-{max_num}, < or > to move search page, q to quit): "
             page_index_in = (input(query_str) or "q").strip()
 
-            if (page_index_in == "q"):
+            if page_index_in == "q":
                 return
 
             print("")
@@ -83,4 +83,3 @@ def search(ext_active: Extension, query: str) -> Manga:
             print(f"You chose: '{manga.title}'")
 
     return manga
-# end_search

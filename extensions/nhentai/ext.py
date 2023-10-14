@@ -20,7 +20,6 @@ class NHentai(Extension):
 
     def parse_url(self, query: str) -> dict:
         return super().parse_url(query)
-    # end_parse_url
 
     def parse_gallery(self, url):
         res = self.session.get(url)
@@ -32,14 +31,12 @@ class NHentai(Extension):
         manga.title = soup.find("span", "pretty").text.strip()
         manga.id = re.search(id_regex, res.url).group(1)
 
-        return {
-            "type": "manga",
-            "item": manga
-        }
-    # end_parse_gallery
+        return {"type": "manga", "item": manga}
 
     def search(self, query: str, page: int, cover: bool = False):
-        search_url = f"https://nhentai.net/search/?q={query}+language%3Aenglish&page={page}"
+        search_url = (
+            f"https://nhentai.net/search/?q={query}+language%3Aenglish&page={page}"
+        )
 
         res = self.session.get(search_url)
         res.close()
@@ -60,8 +57,7 @@ class NHentai(Extension):
 
         for item in gallery:
             # gets id from "/g/{id}"
-            id = re.search(r"\/g\/([0-9]+)\/",
-                           item.find("a")["href"]).group(1)
+            id = re.search(r"\/g\/([0-9]+)\/", item.find("a")["href"]).group(1)
             title = item.find("div", "caption").string
 
             manga = Manga()
@@ -74,7 +70,6 @@ class NHentai(Extension):
             manga_list.append(manga)
 
         return SearchResult(manga_list, last_page)
-    # end_search
 
     def get_manga_info(self, manga: Manga):
         res = self.session.get(f"https://nhentai.net/g/{manga.id}/")
@@ -91,10 +86,12 @@ class NHentai(Extension):
                 tag_doms = tag_container.find_all("a")
 
                 for tag_dom in tag_doms:
-                    tags.append(Tag(
-                        tag_dom.find("span", "name").string,
-                        tag_dom["class"][1].split("-")[-1]
-                    ))
+                    tags.append(
+                        Tag(
+                            tag_dom.find("span", "name").string,
+                            tag_dom["class"][1].split("-")[-1],
+                        )
+                    )
 
             elif "Groups:" in category:
                 tag_doms = tag_container.find_all("a")
@@ -133,7 +130,6 @@ class NHentai(Extension):
         manga.tags = tags
 
         return manga
-    # end_get_manga_info
 
     def get_random(self):
         res = self.session.get("https://nhentai.net/random/")
@@ -141,7 +137,6 @@ class NHentai(Extension):
 
         manga = self.parse_gallery(res.url)
         return manga["item"]
-    # end_get_random
 
     def arg_handler(self, args: List[str]):
         # pairs argument with its corresponding function
@@ -153,7 +148,7 @@ class NHentai(Extension):
             "--favourite": gallery.favourite,
             "-CM": gallery.comment,
             "--comment": gallery.comment,
-            "--undo-comment": gallery.undo_comment
+            "--undo-comment": gallery.undo_comment,
         }
 
         for arg in args:
@@ -161,8 +156,6 @@ class NHentai(Extension):
 
             if arg[0] in arg_handlers:
                 arg_handlers[arg.pop(0)](self.session, *arg)
-    # end_arg_handler
-# end_NHentai_class
 
 
 def get_formatted_date(date: str) -> str:
@@ -177,4 +170,3 @@ def get_formatted_date(date: str) -> str:
     upload_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z")
     upload_date = upload_date.strftime("%d/%m/%Y")
     return upload_date
-# end_get_formatted_date

@@ -30,21 +30,15 @@ class Hitomi(Extension):
 
         chapter = parse.parse_gallery(self, query)
         return ParseResult(ParseResult._CHAPTER, chapter)
-    # end_parse_url
 
     def search(self, query: str, page: int, cover: bool = False) -> SearchResult:
         return SearchResult(None, None)
-    # end_search
 
     def get_manga_info(self, manga: Manga) -> Manga:
-        return Manga(pre_download=False)
-    # end_get_manga_info
+        return Manga()
 
     def get_random(self) -> Manga:
-        return Manga(pre_download=False)
-    # end_get_random
+        return Manga()
 
     def arg_handler(self, args: List[str]):
         return
-    # end_arg_handler
-# end_Hitomi_class

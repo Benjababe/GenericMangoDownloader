@@ -40,9 +40,13 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
         print(foldername)
 
     while True:
-        chapter_range = f"{manga_info.chapters[0].number}-{manga_info.chapters[-1].number}"
-        query_str = f"Which chapters do you wish to download ({chapter_range}, q to quit): "
-        to_download = (input(query_str).lower().strip() or "q")
+        chapter_range = (
+            f"{manga_info.chapters[0].number}-{manga_info.chapters[-1].number}"
+        )
+        query_str = (
+            f"Which chapters do you wish to download ({chapter_range}, q to quit): "
+        )
+        to_download = input(query_str).lower().strip() or "q"
 
         if to_download == "q":
             return
@@ -56,11 +60,9 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
     to_download = parse_to_download(to_download, valid_chapters)
 
     # only keeps the keys that are requested to be downloaded in valid_chapters
-    valid_chapters = [valid_chapters[chapter_num]
-                      for chapter_num in to_download]
+    valid_chapters = [valid_chapters[chapter_num] for chapter_num in to_download]
 
     return valid_chapters
-# end_get_manga_info
 
 
 def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[Chapter]:
@@ -105,4 +107,3 @@ def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[C
                 return []
 
     return new_to_download
-# end_parse_to_download

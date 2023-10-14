@@ -14,7 +14,9 @@ def random_manga(ext_active: Extension) -> Manga:
     manga = ext_active.get_random()
 
     while True:
-        query = f"Found random manga \"{manga.title}\". Do you wish to download it? (Y/n): "
+        query = (
+            f'Found random manga "{manga.title}". Do you wish to download it? (Y/n): '
+        )
         dl = input(query) or "Y"
 
         if dl.upper() == "N":
@@ -24,4 +26,3 @@ def random_manga(ext_active: Extension) -> Manga:
             break
 
     return manga
-# end_random

@@ -6,7 +6,7 @@ from models.results import ParseResult, SearchResult
 
 
 class Extension(ABC):
-    """ 
+    """
     This will be the parent class of all extensions for this program
     Ensure all methods that can be implemented are done so
     """
@@ -27,7 +27,6 @@ class Extension(ABC):
 
         msg = "parse_url method has not been implemented"
         raise NotImplementedError(msg)
-    # end_parse_url
 
     @abstractmethod
     def search(self, query: str, page: int, cover: bool = False) -> SearchResult:
@@ -47,7 +46,6 @@ class Extension(ABC):
 
         msg = "search method has not been implemented"
         raise NotImplementedError(msg)
-    # end_search
 
     @abstractmethod
     def get_manga_info(self, manga: Manga) -> Manga:
@@ -65,7 +63,6 @@ class Extension(ABC):
 
         msg = "get_manga_info method has not been implemented"
         raise NotImplementedError(msg)
-    # end_get_manga_info
 
     @abstractmethod
     def get_random(self) -> Manga:
@@ -80,7 +77,6 @@ class Extension(ABC):
 
         msg = "get_random method has not been implemented"
         raise NotImplementedError(msg)
-    # end_get_random
 
     @abstractmethod
     def arg_handler(self, args: List[str]):
@@ -95,5 +91,3 @@ class Extension(ABC):
 
         msg = "arg_handler method has not been implemented"
         raise NotImplementedError(msg)
-    # end_arg_handler
-# end_Extension

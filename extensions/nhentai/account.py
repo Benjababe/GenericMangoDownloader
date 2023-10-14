@@ -20,8 +20,7 @@ def login(session: requests.Session, session_id: str = ""):
     if session_id == "":
         session_id = input("Please enter session ID: ")
 
-    session.cookies.set(name="sessionid", value=session_id,
-                        domain="nhentai.net")
+    session.cookies.set(name="sessionid", value=session_id, domain="nhentai.net")
 
     res = session.get(SITE_URL)
     res.close()
@@ -30,4 +29,3 @@ def login(session: requests.Session, session_id: str = ""):
     core.write_pickle("nhentai", "session", session)
     username = soup.find("span", "username").text.strip()
     print(f"Logged in as {username}")
-# end_login

@@ -27,7 +27,6 @@ def parse_url(self, url: str) -> ParseResult:
     elif CHAPTER_TEMPLATE in url and url.index(CHAPTER_TEMPLATE) == 0:
         chapter_id = url.replace(CHAPTER_TEMPLATE, "").split("/")[0]
         return parse_url_chapter(self, chapter_id)
-# end_parse_url
 
 
 def parse_url_manga(self, manga_id: str) -> ParseResult:
@@ -51,7 +50,6 @@ def parse_url_manga(self, manga_id: str) -> ParseResult:
     manga.id = manga_id
 
     return ParseResult(ParseResult._MANGA, manga)
-# end_parse_url_manga
 
 
 def parse_url_chapter(self, chapter_id: str) -> ParseResult:
@@ -90,4 +88,3 @@ def parse_url_chapter(self, chapter_id: str) -> ParseResult:
             chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
 
     return ParseResult(ParseResult._CHAPTER, chapter)
-# end_parse_url_chapter

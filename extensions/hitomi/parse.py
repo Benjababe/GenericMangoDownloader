@@ -36,12 +36,9 @@ def parse_gallery(self, query: str) -> Chapter:
     chapter.manga_title = data["title"]
 
     # essential for downloading else you'll get a 403 error
-    chapter.headers = {
-        "referer": f"https://hitomi.la/reader/{chapter.id}.html"
-    }
+    chapter.headers = {"referer": f"https://hitomi.la/reader/{chapter.id}.html"}
 
     return chapter
-# end_parse_gallery
 
 
 def get_page_urls(self, data: dict) -> List[dict]:
@@ -73,11 +70,12 @@ def get_page_urls(self, data: dict) -> List[dict]:
         second_subdom = "b" if no_webp and no_avif or not self.always_webp else "a"
         hash_path = full_path_from_hash(self.gg, hash)
 
-        page_url = f"https://{first_subdom}{second_subdom}.hitomi.la/{path}/{hash_path}.{ext}"
+        page_url = (
+            f"https://{first_subdom}{second_subdom}.hitomi.la/{path}/{hash_path}.{ext}"
+        )
         pages.append(page_url)
 
     return pages
-# end_get_pages
 
 
 def full_path_from_hash(gg: dict, hash: str) -> str:
@@ -101,7 +99,6 @@ def full_path_from_hash(gg: dict, hash: str) -> str:
 
     # full pathname: "123456879/737/abcde12"
     return f"{m1}{hash_int}/{hash}"
-# end_full_path_from_path
 
 
 def first_subdom_from_hash(gg: dict, hash: str) -> str:
@@ -125,4 +122,3 @@ def first_subdom_from_hash(gg: dict, hash: str) -> str:
 
     # returns "a" or "b" depending on o value
     return chr(97 + o)
-# end_first_subdom_from_gallery_id

@@ -28,7 +28,6 @@ def check_pickle(ext: str):
     with open(DATA_FILE, "wb") as f:
         pickle.dump(data, f)
         f.close()
-# end_check_pickle
 
 
 def write_pickle(ext: str, key: str, value):
@@ -51,7 +50,6 @@ def write_pickle(ext: str, key: str, value):
     with open(DATA_FILE, "wb") as f:
         pickle.dump(data, f)
         f.close()
-# end_write_pickle
 
 
 def read_pickle(ext: str, key: str):
@@ -76,7 +74,6 @@ def read_pickle(ext: str, key: str):
 
     else:
         return None
-# end_read_pickle
 
 
 def delete_pickle(ext: str, key: str = "") -> bool:
@@ -111,7 +108,6 @@ def delete_pickle(ext: str, key: str = "") -> bool:
         f.close()
 
     return True
-    # end_delete_pickle
 
 
 def is_url(url: str) -> bool:
@@ -124,16 +120,17 @@ def is_url(url: str) -> bool:
         bool: Boolean value whether string is a url
     """
     regex = re.compile(
-        r'^(?:http)s?://'  # http:// or https://
+        r"^(?:http)s?://"  # http:// or https://
         # domain...
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
-        r'localhost|'  # localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"
+        r"localhost|"  # localhost...
+        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+        r"(?::\d+)?"  # optional port
+        r"(?:/?|[/?]\S+)$",
+        re.IGNORECASE,
+    )
 
     return not re.match(regex, url) == None
-# end_is_url
 
 
 def is_valid_download_range(to_download: str) -> bool:
@@ -158,4 +155,3 @@ def is_valid_download_range(to_download: str) -> bool:
             res = False
 
     return res
-# end_is_digit

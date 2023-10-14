@@ -23,7 +23,6 @@ def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
     """
 
     for chapter in valid_chapters:
-
         # runs the pre_download for the extension if needed
         # most likely used to retrieve page_urls for the chapter
         if chapter.pre_download == True:
@@ -32,8 +31,6 @@ def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(download_chapter_async(chapter))
         loop.run_until_complete(future)
-    # end_chapter_loop
-# end_download_chapters
 
 
 async def download_chapter_async(chapter: Chapter):
@@ -65,18 +62,27 @@ async def download_chapter_async(chapter: Chapter):
                 loop.run_in_executor(
                     executor,
                     download_page,
-                    *(chapter.page_urls[i], chapter_path, i+1, dl_print, chapter.cloudflare, chapter.headers)
+                    *(
+                        chapter.page_urls[i],
+                        chapter_path,
+                        i + 1,
+                        dl_print,
+                        chapter.cloudflare,
+                        chapter.headers,
+                    ),
                 )
             )
-        # end_for_page_loop
-    # end_multithread
-
-# end_download_chapter
 
 
 # basic download function from the given image url
-def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = "",
-                  cloudflare: bool = False, headers: dict = {}):
+def download_page(
+    url: str,
+    chapter_path: str,
+    page_num: int,
+    dl_print: str = "",
+    cloudflare: bool = False,
+    headers: dict = {},
+):
     """Downloads manga image from URL
 
     Args:
@@ -115,4 +121,3 @@ def download_page(url: str, chapter_path: str, page_num: int, dl_print: str = ""
         print(f"Page {page_num}: {res.url} failed...")
 
     res.close()
-# end_download_page

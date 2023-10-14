@@ -3,12 +3,10 @@ import unittest
 
 
 class TestMisc(unittest.TestCase):
-
     def test_is_url(self):
         self.assertTrue(misc.is_url("https://google.com"))
         self.assertTrue(misc.is_url("https://mangadex.org/chapter/123"))
         self.assertFalse(misc.is_url("Hello World!"))
-    # end_test_is_url
 
     def test_read_write_delete_pickle(self):
         # write then read pickle
@@ -21,5 +19,3 @@ class TestMisc(unittest.TestCase):
         self.assertTrue(misc.delete_pickle("unittest"))
         self.assertFalse(misc.delete_pickle("unittest", "testkey"))
         self.assertFalse(misc.delete_pickle("unittest"))
-    # end_test_read_write_pickle
-# end_TestMisc

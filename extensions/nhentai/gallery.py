@@ -37,17 +37,19 @@ def favourite(session: requests.Session, manga_id: str):
 
         if fav.lower() in ["y", "yes"]:
             res = session.post(
-                f"https://nhentai.net/api/gallery/{manga_id}/unfavorite", headers=gallery_headers)
+                f"https://nhentai.net/api/gallery/{manga_id}/unfavorite",
+                headers=gallery_headers,
+            )
             res.close()
             check_fav_res(res, title)
 
         return
 
     res = session.post(
-        f"https://nhentai.net/api/gallery/{manga_id}/favorite", headers=gallery_headers)
+        f"https://nhentai.net/api/gallery/{manga_id}/favorite", headers=gallery_headers
+    )
     res.close()
     check_fav_res(res, title)
-# end_favourite
 
 
 def check_fav_res(res: requests.Response, title: str):
@@ -58,13 +60,12 @@ def check_fav_res(res: requests.Response, title: str):
         title (str): Title of manga to be (un)favourited
     """
 
-    if (res.status_code == 200):
+    if res.status_code == 200:
         data = json.loads(res.text)
         print(title, end=" has been ")
         print("favourited" if data["favorited"] else "unfavourited")
     else:
         print("Error with request")
-# end_check_fav_res
 
 
 # comments on manga by id
@@ -90,23 +91,18 @@ def comment(session: requests.Session, manga_id: str):
 
     comment_url = f"https://nhentai.net/api/gallery/{manga_id}/comments/submit"
 
-    res = session.post(comment_url, headers=gallery_headers,
-                       json={"body": comment_str})
+    res = session.post(comment_url, headers=gallery_headers, json={"body": comment_str})
     res.close()
     data = json.loads(res.text)
 
     if "success" in data:
         # saves last comment for undoing
-        last_comment = {
-            "manga_id": manga_id,
-            "comment_id": data["comment"]["id"]
-        }
+        last_comment = {"manga_id": manga_id, "comment_id": data["comment"]["id"]}
         core.write_pickle("nhentai", "last_comment", last_comment)
         print(f"Successfully commented on {title}")
 
     elif "error" in data:
         print(f"nhentai: {data['error']}")
-# end_comment
 
 
 def undo_comment(session: requests.Session):
@@ -127,7 +123,6 @@ def undo_comment(session: requests.Session):
     if data["success"]:
         print("Last comment deleted")
         core.delete_pickle("nhentai", "last_comment")
-# end_undo_comment
 
 
 def set_globals(session: requests.Session, manga_id: str):
@@ -148,8 +143,4 @@ def set_globals(session: requests.Session, manga_id: str):
     # searches all of html file for csrf token value
     csrf_pattern = r"csrf_token: \"([a-zA-Z0-9]*)\""
     csrf_token = re.search(csrf_pattern, res.text).group(1)
-    gallery_headers = {
-        "x-csrftoken": csrf_token,
-        "x-requested-with": "XMLHttpRequest"
-    }
-# end_init_gallery
+    gallery_headers = {"x-csrftoken": csrf_token, "x-requested-with": "XMLHttpRequest"}

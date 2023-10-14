@@ -11,7 +11,6 @@ from models import Chapter, Manga, Tag, SearchResult, ParseResult
 
 # testing methods defined in Mangadex class
 class TestExtension(unittest.TestCase):
-
     # variables used in test cases
     def setUp(self) -> None:
         self.mangadex = mangadexExt.Mangadex()
@@ -40,7 +39,6 @@ class TestExtension(unittest.TestCase):
         check_type = res.type == ParseResult._CHAPTER
         check_item = isinstance(res.item, Chapter)
         self.assertTrue(check_type and check_item)
-    # end_test_parse
 
     def test_search(self):
         query = "Umineko Tsubasa"
@@ -50,13 +48,14 @@ class TestExtension(unittest.TestCase):
         self.assertTrue(isinstance(res, SearchResult))
 
         # checks all items in manga_list is a models.Manga object and attributes are populated
-        all_manga = all(isinstance(manga, Manga) and
-                        len(manga.id) > 0 and len(manga.title) > 0 for manga in res.manga_list)
+        all_manga = all(
+            isinstance(manga, Manga) and len(manga.id) > 0 and len(manga.title) > 0
+            for manga in res.manga_list
+        )
         self.assertTrue(all_manga)
 
         # checks last_page value is a boolean
         self.assertTrue(isinstance(res.last_page, bool))
-    # end_test_search
 
     def test_get_manga_info(self):
         manga = Manga()
@@ -66,14 +65,12 @@ class TestExtension(unittest.TestCase):
         manga = self.mangadex.get_manga_info(manga)
 
         # checks all items in 'chapters' key is a models.Chapter object
-        allChapters = all(isinstance(chapter, Chapter)
-                          for chapter in manga.chapters)
+        allChapters = all(isinstance(chapter, Chapter) for chapter in manga.chapters)
 
         # checks all items in 'tags' key is a Tag object
         allTags = all(isinstance(tag, Tag) for tag in manga.tags)
 
         self.assertTrue(allChapters and allTags)
-    # end_test_get_manga_info
 
     def test_get_chapter(self):
         chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
@@ -89,7 +86,6 @@ class TestExtension(unittest.TestCase):
         self.assertEqual(chapter.number, "1")
         self.assertEqual(chapter.pre_download, True)
         self.assertEqual(chapter.title, "The Witches' Tanabata isn't Sweet")
-    # end_test_get_chapter
 
     def test_get_scanlator(self):
         chapter_list_url = f"{self.API_URL}/chapter/{self.chapter_id}"
@@ -101,7 +97,6 @@ class TestExtension(unittest.TestCase):
 
         # tests with known scanlator of chapter
         self.assertEqual(scanlator, "WTDND Group")
-    # end_test_get_scanlator
 
     def test_pre_download(self):
         # models.Chapter object that has been processed with pre_download
@@ -110,7 +105,6 @@ class TestExtension(unittest.TestCase):
         # ensures all page_urls are valid
         check = all(core.is_url(url) for url in chapter.page_urls)
         self.assertTrue(check)
-    # end_test_pre_download
 
     def test_download(self):
         DOWNLOAD_PATH = "./downloads/unittest"
@@ -129,24 +123,21 @@ class TestExtension(unittest.TestCase):
 
         os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
         os.rmdir(DOWNLOAD_PATH)
-    # end_test_download
 
     def test_get_random(self):
         manga = self.mangadex.get_random()
 
         self.assertIsNotNone(manga.title)
         self.assertIsNotNone(manga.id)
-    # end_test_get_random
 
     def test_get_formatted_date(self):
         DATETIME = "2018-04-11T20:23:32+00:00"
         date = mangadexExt.format_date(DATETIME)
 
         self.assertEquals(date, "11/04/2018")
-    # end_test_get_formatted_date
 
     def get_chapter(self) -> Chapter:
-        """ Helper method for retrieving an attribute-populated models.Chapter object
+        """Helper method for retrieving an attribute-populated models.Chapter object
 
         Returns:
             Chapter: Populated models.Chapter object
@@ -162,9 +153,6 @@ class TestExtension(unittest.TestCase):
         chapter = self.mangadex.get_chapter(data)
         chapter = self.mangadex.pre_download(chapter)
         return chapter
-    # end_get_chapter
-
-# end_TestExtension
 
 
 # tests methods in account.py
@@ -183,9 +171,9 @@ class TestAccount(unittest.TestCase):
         PASSWORD = "password"
 
         # self.session's cookies should update after calling login
-        account.login(self.session, USERNAME, PASSWORD, None)
+        assert self.session is not None
+        account.login(self.session, USERNAME, PASSWORD, "")
         self.assertTrue("Login" in self.session.cookies._cookies[""]["/"])
-    # end_test_login
 
     def test_mark_chapter(self):
         # mark chapter read and unread
@@ -193,11 +181,9 @@ class TestAccount(unittest.TestCase):
         MANGA_ID = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         CHAPTER_ID = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
         marked = account.mark_chapter_read(self.session, MANGA_ID, CHAPTER_ID)
-        unmarked = account.mark_chapter_unread(
-            self.session, MANGA_ID, CHAPTER_ID)
+        unmarked = account.mark_chapter_unread(self.session, MANGA_ID, CHAPTER_ID)
 
         self.assertTrue(marked and unmarked)
-    # end_test_mark_chapter
 
     def test_update_reading_status(self):
         # Umineko Tsubasa
@@ -210,8 +196,6 @@ class TestAccount(unittest.TestCase):
             results.append(res)
 
         self.assertTrue(all(res == True for res in results))
-    # end_test_update_reading_status
-# end_TestAccount
 
 
 if __name__ == "__main__":
