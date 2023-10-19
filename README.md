@@ -6,7 +6,7 @@
 
 Initially only intended for cafe. Kinda expanded on its own and cafe sorta died.
 
-It actually works this time. At least on Python 3.11.
+It actually works this time. At least on Python 3.11.2.
 
 Refer to the [wiki](https://github.com/Benjababe/GenericMangoDownloader/wiki) for detailed use.
 
