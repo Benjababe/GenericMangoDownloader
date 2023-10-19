@@ -5,6 +5,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 import requests
 import cfscrape
+from tqdm.asyncio import tqdm
 
 from models import Chapter, Extension
 
@@ -14,11 +15,11 @@ session = requests.Session()
 cf_scraper = cfscrape.create_scraper()
 
 
-def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
+def download_chapters(ext: Extension, valid_chapters: List[Chapter]):
     """[summary]
 
     Args:
-        ext_active (Extension): Subclass of Extension class the site extension creates
+        ext (Extension): Subclass of Extension class the site extension creates
         valid_chapters (list): List of models.Chapter objects with attributes populated
     """
 
@@ -26,7 +27,7 @@ def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
         # runs the pre_download for the extension if needed
         # most likely used to retrieve page_urls for the chapter
         if chapter.pre_download is True:
-            chapter = ext_active.pre_download(chapter)
+            chapter = ext.pre_download(chapter)
 
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(download_chapter_async(chapter))
@@ -41,37 +42,39 @@ async def download_chapter_async(chapter: Chapter):
     """
 
     # find and remove all invalid characters from folder pathname
-    remove_char = '[<>:"\/|?*]'
+    remove_char = r'[<>:"/|?*]'
     chapter_path = f"{DOWNLOAD_PATH}{re.sub(remove_char, '', chapter.manga_title)}/"
 
     if not chapter.foldername == "":
         chapter_path += f"{re.sub(remove_char, '', chapter.foldername)}/"
 
-    # blatantly copied off https://bit.ly/2WT52U5
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        loop = asyncio.get_event_loop()
-        tasks = []
+    with tqdm(total=len(chapter.page_urls)) as progress:
+        # blatantly copied off https://bit.ly/2WT52U5
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            loop = asyncio.get_event_loop()
+            tasks = []
 
-        for i, page_url in enumerate(chapter.page_urls):
-            dl_print = f"{chapter.manga_title}: Chapter {chapter.number} page {i} download complete"
+            for i, page_url in enumerate(chapter.page_urls):
+                # dl_print = f"{chapter.manga_title}: Chapter {chapter.number} page {i} download complete"
+                progress.update()
 
-            if not os.path.exists(chapter_path):
-                os.makedirs(chapter_path)
+                if not os.path.exists(chapter_path):
+                    os.makedirs(chapter_path)
 
-            tasks.append(
-                loop.run_in_executor(
-                    executor,
-                    download_page,
-                    *(
-                        page_url,
-                        chapter_path,
-                        i + 1,
-                        dl_print,
-                        chapter.cloudflare,
-                        chapter.headers,
-                    ),
+                tasks.append(
+                    loop.run_in_executor(
+                        executor,
+                        download_page,
+                        *(
+                            page_url,
+                            chapter_path,
+                            i + 1,
+                            "",
+                            chapter.cloudflare,
+                            chapter.headers,
+                        ),
+                    )
                 )
-            )
 
 
 # basic download function from the given image url
@@ -119,7 +122,9 @@ def download_page(
         with open(page_path, "wb") as page:
             page.write(res.content)
             page.close()
-        print(dl_print)
+
+        if dl_print.strip() != "":
+            print(dl_print)
 
     else:
         print(f"Page {page_num}: {res.url} failed...")

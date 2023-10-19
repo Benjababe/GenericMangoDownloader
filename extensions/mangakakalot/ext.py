@@ -269,8 +269,7 @@ def generate_headers(chapter: Chapter) -> dict:
         "sec-fetch-mode": "no-cors",
         "sec-fetch-site": "cross-site",
         "sec-gpc": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) \
-                        Chrome/110.0.0.0 Safari/537.36",
+        "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
     }
 
     return cf_headers

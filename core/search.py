@@ -1,11 +1,11 @@
 from models import Extension, Manga
 
 
-def search(ext_active: Extension, query: str) -> Manga:
+def search(ext: Extension, query: str) -> Manga:
     """Retrieves manga from searching
 
     Args:
-        ext_active (Extension): Subclass of Extension class the site extension creates
+        ext (Extension): Subclass of Extension class the site extension creates
         query (str): Query string to search for manga
 
     Returns:
@@ -19,7 +19,7 @@ def search(ext_active: Extension, query: str) -> Manga:
 
     while manga is None:
         # first retrieves list of manga from search query
-        search_res = ext_active.search(query, search_page)
+        search_res = ext.search(query, search_page)
 
         if len(search_res.manga_list) == 0:
             print("There are 0 results for your search query. Exiting...")
@@ -35,8 +35,7 @@ def search(ext_active: Extension, query: str) -> Manga:
         # keep asking until a manga selection is made, flagged by reinput
         while reinput:
             max_num = len(search_res.manga_list)
-            query_str = f"Which manga do you wish to download (1-{max_num}, \
-                            < or > to move search page, q to quit): "
+            query_str = f"Which manga do you wish to download (1-{max_num}, < or > to move search page, q to quit): "
             page_index_in = (input(query_str) or "q").strip()
 
             if page_index_in == "q":

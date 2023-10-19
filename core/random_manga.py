@@ -1,17 +1,17 @@
 from models import Extension, Manga
 
 
-def random_manga(ext_active: Extension) -> Manga:
+def random_manga(ext: Extension) -> Manga:
     """Retrieves random manga
 
     Args:
-        ext_active (Extension): Subclass of Extension class the site extension creates
+        ext (Extension): Subclass of Extension class the site extension creates
 
     Returns:
         Manga: models.Manga object with only id and title attributes populated
     """
 
-    manga = ext_active.get_random()
+    manga = ext.get_random()
 
     while True:
         query = (

@@ -144,13 +144,10 @@ def is_valid_download_range(to_download: str) -> bool:
     res = True
     pattern = re.compile(r"^\d+(\.?\d+)?$")
     dl_spl = to_download.split(",")
-    num_list = []
 
-    for i, spl in enumerate(dl_spl):
-        num_list += spl[i].split("-")
-
-    for number in num_list:
-        if not bool(re.search(pattern, number.strip())):
-            res = False
+    for ch_range in dl_spl:
+        for number in ch_range.split("-"):
+            if not bool(re.search(pattern, number.strip())):
+                res = False
 
     return res

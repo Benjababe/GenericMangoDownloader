@@ -3,18 +3,18 @@ from core.misc import is_valid_download_range
 from models import Chapter, Extension, Manga
 
 
-def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
+def get_manga_info(ext: Extension, manga: Manga) -> List[Chapter]:
     """Retrieves all available chapters for download
 
     Args:
-        ext_active (Extension): Instantiated object of an Extension subclass
+        ext (Extension): Instantiated object of an Extension subclass
         manga (Manga): models.Manga object with only id and title attributes populated
 
     Returns:
         List[Chapter]: List of models.Chapter objects available to be downloaded
     """
 
-    manga_info = ext_active.get_manga_info(manga)
+    manga_info = ext.get_manga_info(manga)
     to_download, valid_chapters = [], {}
 
     # if no available chapters, exit
@@ -31,8 +31,7 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
 
     for chapter in manga_info.chapters:
         scanlator = f"[{chapter.scanlator}] " if chapter.scanlator else ""
-        foldername = f"{scanlator}Ch.{chapter.number}{'' if chapter.title == '' else ' - '}\
-                        {chapter.title}"
+        foldername = f"{scanlator}Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
 
         chapter_float = round(float(chapter.number), 3)
         chapter.foldername = foldername
@@ -53,8 +52,9 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
             return None
 
         # keeps asking for chapters until a valid input is given
-        if not is_valid_download_range(to_download):
-            print("Error with input, please try again.")
+        if is_valid_download_range(to_download):
+            break
+        print("Error with input, please try again.")
 
     to_download = parse_to_download(to_download, valid_chapters)
 

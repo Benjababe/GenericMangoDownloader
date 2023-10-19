@@ -173,8 +173,7 @@ class Mangadex(Extension):
         tmp_data = res.json()
 
         # image url without the filename
-        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/\
-            {tmp_data['chapter']['hash']}"
+        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/{tmp_data['chapter']['hash']}"
 
         # constructs full image url
         chapter.page_urls = [

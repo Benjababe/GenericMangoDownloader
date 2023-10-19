@@ -7,6 +7,9 @@ from models.results import SearchResult
 
 API_URL = "https://api.mangadex.org"
 
+# only show 10 manga in search results at a time
+SEARCH_LEN = 10
+
 
 def search(
     self, query: str, page: int, cover: bool = False, search_tags: List[str] = None
@@ -23,8 +26,6 @@ def search(
         SearchResult
     """
 
-    # only show 10 manga in search results at a time
-    search_len = 10
     search_url = f"{API_URL}/manga"
 
     # query Mangadex with proper parameters
@@ -32,8 +33,8 @@ def search(
         search_url,
         params={
             "title": query,
-            "limit": search_len,
-            "offset": (page - 1) * search_len,
+            "limit": SEARCH_LEN,
+            "offset": (page - 1) * SEARCH_LEN,
             "includedTags[]": search_tags,
         },
     )
@@ -66,8 +67,7 @@ def search(
 
                     cover_data = json.loads(res.text)
                     cover_filename = cover_data["data"]["attributes"]["fileName"]
-                    manga.cover_url = f"https://uploads.mangadex.org/covers/\
-                                        {manga.id}/{cover_filename}"
+                    manga.cover_url = f"https://uploads.mangadex.org/covers/{manga.id}/{cover_filename}"
 
         manga_list.append(manga)
 

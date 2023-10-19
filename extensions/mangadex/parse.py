@@ -87,7 +87,6 @@ def parse_url_chapter(self, chapter_id: str) -> ParseResult:
             data = res.json()["data"]
 
             chapter.manga_title = data["attributes"]["title"][chapter_lang]
-            chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}\
-                {'' if chapter.title == '' else ' - '}{chapter.title}"
+            chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
 
     return ParseResult(ParseResult.CHAPTER, chapter)

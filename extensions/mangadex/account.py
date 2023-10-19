@@ -103,7 +103,7 @@ def update_login_session(session: requests.Session, data: dict):
     write_pickle("mangadex", "session", session)
 
 
-def toggle_data_saver():
+def toggle_data_saver(_: requests.Session):
     """Toggles data setting for MangaDex"""
     data_saver = read_pickle("mangadex", "data_saver")
     data_saver = not data_saver
@@ -112,7 +112,7 @@ def toggle_data_saver():
     print(f"Data saver set to: {data_saver}")
 
 
-def set_language(language: str):
+def set_language(_: requests.Session, language: str):
     """Sets manga language for MangaDex
 
     Args:
@@ -192,8 +192,7 @@ def update_reading_status(
     """
     check_login_session(session)
 
-    msg = """Enter manga status:\n1.Reading\n2.On hold\n3.Plan to read\n4.Dropped\n\
-            5.Re-reading\n6.Completed\n:"""
+    msg = """Enter manga status:\n1.Reading\n2.On hold\n3.Plan to read\n4.Dropped\n5.Re-reading\n6.Completed\n:"""
     while status_index < 0 or status_index > 5:
         status_index = int(input(msg)) - 1
 
