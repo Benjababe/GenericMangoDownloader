@@ -1,27 +1,33 @@
 import re
 from typing import List
+from datetime import datetime
+import cloudscraper
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
 
 # local files
-from models import Chapter, Extension, Manga, Tag, SearchResult, ParseResult
-import extensions.nhentai.account as account
-import extensions.nhentai.gallery as gallery
+from models import Chapter, Extension, Manga, Tag, SearchResult
+from extensions.nhentai import account
+from extensions.nhentai import gallery
 import core
 
 NAME = "nhentai"
+cf_scraper = cloudscraper.CloudScraper()
 
 
 class NHentai(Extension):
+    """Extension for https://nhentai.net"""
+
     # initialises pickled variables
     stored_session = core.read_pickle("nhentai", "session")
     session = stored_session if stored_session else requests.Session()
 
-    def parse_url(self, query: str) -> dict:
-        return super().parse_url(query)
+    def parse_url(self, url: str) -> dict:
+        print("nhentai parse_url")
 
     def parse_gallery(self, url):
+        """Handles home page URL"""
+
         res = self.session.get(url)
         res.close()
         soup = BeautifulSoup(res.text, "html.parser")
@@ -38,13 +44,14 @@ class NHentai(Extension):
             f"https://nhentai.net/search/?q={query}+language%3Aenglish&page={page}"
         )
 
-        res = self.session.get(search_url)
+        # res = self.session.get(search_url)
+        res = cf_scraper.get(search_url)
         res.close()
 
         soup = BeautifulSoup(res.text, "html.parser")
 
         last_btn = soup.find("a", "last")
-        if last_btn == None:
+        if last_btn is None:
             last_page = True
         else:
             regex = r"page=([0-9]+)"
@@ -53,15 +60,15 @@ class NHentai(Extension):
 
         manga_list = []
 
-        gallery = soup.find_all("div", "gallery")
+        gallery_divs = soup.find_all("div", "gallery")
 
-        for item in gallery:
+        for item in gallery_divs:
             # gets id from "/g/{id}"
-            id = re.search(r"\/g\/([0-9]+)\/", item.find("a")["href"]).group(1)
+            manga_id = re.search(r"\/g\/([0-9]+)\/", item.find("a")["href"]).group(1)
             title = item.find("div", "caption").string
 
             manga = Manga()
-            manga.id = id
+            manga.id = manga_id
             manga.title = title
 
             if cover:

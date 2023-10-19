@@ -2,7 +2,6 @@ import json
 import re
 import requests
 from bs4 import BeautifulSoup
-from extensions.mangadex.ext import API_URL
 
 import core
 
@@ -21,9 +20,6 @@ def favourite(session: requests.Session, manga_id: str):
         session (requests.Session): Session object containing login session
         manga_id (str): Manga ID to be (un)favourited
     """
-
-    global gallery_url, res, soup, gallery_headers
-
     if not manga_id in gallery_url:
         set_globals(session, manga_id)
 
@@ -45,23 +41,23 @@ def favourite(session: requests.Session, manga_id: str):
 
         return
 
-    res = session.post(
+    fav_res = session.post(
         f"https://nhentai.net/api/gallery/{manga_id}/favorite", headers=gallery_headers
     )
-    res.close()
-    check_fav_res(res, title)
+    fav_res.close()
+    check_fav_res(fav_res, title)
 
 
-def check_fav_res(res: requests.Response, title: str):
+def check_fav_res(fav_res: requests.Response, title: str):
     """Checks favourite status from HTTP Response
 
     Args:
-        res (requests.Response): HTTP Response after trying to (un)favourite a manga
+        res_fav (requests.Response): HTTP Response after trying to (un)favourite a manga
         title (str): Title of manga to be (un)favourited
     """
 
-    if res.status_code == 200:
-        data = json.loads(res.text)
+    if fav_res.status_code == 200:
+        data = json.loads(fav_res.text)
         print(title, end=" has been ")
         print("favourited" if data["favorited"] else "unfavourited")
     else:
@@ -77,7 +73,7 @@ def comment(session: requests.Session, manga_id: str):
         manga_id (str): Manga ID of manga to be commented
     """
 
-    global gallery_url, res, soup, gallery_headers
+    global res
 
     if not manga_id in gallery_url:
         set_globals(session, manga_id)
@@ -106,19 +102,18 @@ def comment(session: requests.Session, manga_id: str):
 
 
 def undo_comment(session: requests.Session):
+    """Removes last comment made"""
     last_comment = core.read_pickle("nhentai", "last_comment")
-    if last_comment == None:
+    if last_comment is None:
         return
-
-    global gallery_url, res, soup, gallery_headers
 
     if not last_comment["manga_id"] in gallery_url:
         set_globals(session, last_comment["manga_id"])
 
     delete_url = f"https://nhentai.net/api/comments/{last_comment['comment_id']}/delete"
-    res = session.post(delete_url, headers=gallery_headers)
-    res.close()
-    data = json.loads(res.text)
+    _res = session.post(delete_url, headers=gallery_headers)
+    _res.close()
+    data = json.loads(_res.text)
 
     if data["success"]:
         print("Last comment deleted")

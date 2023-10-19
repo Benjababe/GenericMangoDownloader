@@ -14,9 +14,9 @@ def check_pickle(ext: str):
 
     # creates pickle file if it doesn't exist and stores an empty dict in it
     if not os.path.exists(DATA_FILE):
-        f = open(DATA_FILE, "wb")
-        pickle.dump({}, f)
-        f.close()
+        with open(DATA_FILE, "wb") as f:
+            pickle.dump({}, f)
+            f.close()
 
     with open(DATA_FILE, "rb") as f:
         data = pickle.load(f)
@@ -52,7 +52,7 @@ def write_pickle(ext: str, key: str, value):
         f.close()
 
 
-def read_pickle(ext: str, key: str):
+def read_pickle(ext: str, key: str) -> str:
     """Reads pickle data for extension
 
     Args:
@@ -72,8 +72,7 @@ def read_pickle(ext: str, key: str):
     if key in data[ext]:
         return data[ext][key]
 
-    else:
-        return None
+    return None
 
 
 def delete_pickle(ext: str, key: str = "") -> bool:
@@ -100,7 +99,7 @@ def delete_pickle(ext: str, key: str = "") -> bool:
         else:
             del data[ext][key]
 
-    except:
+    except KeyError:
         return False
 
     with open(DATA_FILE, "wb") as f:
@@ -130,7 +129,7 @@ def is_url(url: str) -> bool:
         re.IGNORECASE,
     )
 
-    return not re.match(regex, url) == None
+    return re.match(regex, url) is not None
 
 
 def is_valid_download_range(to_download: str) -> bool:
@@ -143,12 +142,12 @@ def is_valid_download_range(to_download: str) -> bool:
         bool: _description_
     """
     res = True
-    pattern = re.compile("^\d+(\.?\d+)?$")
+    pattern = re.compile(r"^\d+(\.?\d+)?$")
     dl_spl = to_download.split(",")
     num_list = []
 
-    for i in range(len(dl_spl)):
-        num_list += dl_spl[i].split("-")
+    for i, spl in enumerate(dl_spl):
+        num_list += spl[i].split("-")
 
     for number in num_list:
         if not bool(re.search(pattern, number.strip())):

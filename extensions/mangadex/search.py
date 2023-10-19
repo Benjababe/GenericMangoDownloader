@@ -1,6 +1,6 @@
+from typing import List
 import json
 import requests
-from typing import Dict, List
 
 from models import Manga, Tag
 from models.results import SearchResult
@@ -9,8 +9,20 @@ API_URL = "https://api.mangadex.org"
 
 
 def search(
-    self, query: str, page: int, cover: bool = False, search_tags: List[str] = []
+    self, query: str, page: int, cover: bool = False, search_tags: List[str] = None
 ) -> SearchResult:
+    """Searches for manga in MangaDex
+
+    Args:
+        query (str): Text query to search with
+        page (int): Current page of results
+        cover (bool, optional): Flag whether to show cover. Defaults to False.
+        search_tags (List[str], optional): Manga tags to include with search. Defaults to [].
+
+    Returns:
+        SearchResult
+    """
+
     # only show 10 manga in search results at a time
     search_len = 10
     search_url = f"{API_URL}/manga"
@@ -28,7 +40,8 @@ def search(
     res.close()
     data = json.loads(res.text)
 
-    # only reaches last page of search result when chapter offset + chapter displayed is greater of equals total search results
+    # only reaches last page of search result when chapter offset + chapter
+    # displayed is greater of equals total search results
     last_page = (len(data["data"]) + data["offset"]) >= data["total"]
 
     manga_list = []
@@ -53,7 +66,8 @@ def search(
 
                     cover_data = json.loads(res.text)
                     cover_filename = cover_data["data"]["attributes"]["fileName"]
-                    manga.cover_url = f"https://uploads.mangadex.org/covers/{manga.id}/{cover_filename}"
+                    manga.cover_url = f"https://uploads.mangadex.org/covers/\
+                                        {manga.id}/{cover_filename}"
 
         manga_list.append(manga)
 
@@ -71,7 +85,7 @@ def query_tags(session: requests.Session) -> List[str]:
     """
 
     tag_query = ""
-    while not tag_query.lower() == "y":
+    while tag_query.lower() != "y":
         tag_query = input("Do you wish to search with tags? (y/N): ") or "N"
 
         if tag_query.lower() == "n":
@@ -90,7 +104,7 @@ def query_tags(session: requests.Session) -> List[str]:
 
     tag_query = ""
     tags_used = []
-    while not tag_query.lower() == "s":
+    while tag_query.lower() != "s":
         query = f"Enter ID of tag to include (1-{len(tags)}, s to stop): "
         tag_query = input(query) or ""
 
@@ -100,18 +114,19 @@ def query_tags(session: requests.Session) -> List[str]:
 
         i = int(tag_query) - 1
 
-        if i >= 0 and i < len(tags):
+        if 0 <= i < len(tags):
             if tags[i] in tags_used:
                 tags_used.remove(tags[i])
             else:
                 tags_used.append(tags[i])
 
         print("Currently using: ", end="" if len(tags_used) > 0 else "\n")
-        for i in range(len(tags_used)):
+
+        for i, tag in enumerate(tags_used):
             if i < len(tags_used) - 1:
-                print(f"{tags_used[i].name}", end=", ")
+                print(f"{tag.name}", end=", ")
             else:
-                print(tags_used[i].name)
+                print(tag.name)
 
     # we only want the ids of the tags for querying
     tag_ids_used = list(map(lambda x: x.id, tags_used))
@@ -136,8 +151,8 @@ def get_tags(session: requests.Session) -> List[Tag]:
 
     for tag in data["data"]:
         name = tag["attributes"]["name"]["en"]
-        id = tag["id"]
-        tags.append(Tag(name, id))
+        tag_id = tag["id"]
+        tags.append(Tag(name, tag_id))
 
     # sort tags in alphabetical order
     tags.sort(key=lambda x: x.name)

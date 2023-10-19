@@ -1,10 +1,10 @@
 import asyncio
 from typing import List
-import cfscrape
 import os
 import re
-import requests
 from concurrent.futures import ThreadPoolExecutor
+import requests
+import cfscrape
 
 from models import Chapter, Extension
 
@@ -25,7 +25,7 @@ def download_chapters(ext_active: Extension, valid_chapters: List[Chapter]):
     for chapter in valid_chapters:
         # runs the pre_download for the extension if needed
         # most likely used to retrieve page_urls for the chapter
-        if chapter.pre_download == True:
+        if chapter.pre_download is True:
             chapter = ext_active.pre_download(chapter)
 
         loop = asyncio.get_event_loop()
@@ -52,7 +52,7 @@ async def download_chapter_async(chapter: Chapter):
         loop = asyncio.get_event_loop()
         tasks = []
 
-        for i in range(len(chapter.page_urls)):
+        for i, page_url in enumerate(chapter.page_urls):
             dl_print = f"{chapter.manga_title}: Chapter {chapter.number} page {i} download complete"
 
             if not os.path.exists(chapter_path):
@@ -63,7 +63,7 @@ async def download_chapter_async(chapter: Chapter):
                     executor,
                     download_page,
                     *(
-                        chapter.page_urls[i],
+                        page_url,
                         chapter_path,
                         i + 1,
                         dl_print,
@@ -81,7 +81,7 @@ def download_page(
     page_num: int,
     dl_print: str = "",
     cloudflare: bool = False,
-    headers: dict = {},
+    headers: dict = None,
 ):
     """Downloads manga image from URL
 
@@ -90,13 +90,17 @@ def download_page(
         chapter_path (str): Directory path to save chapter
         page_num (int): Page number of image
         dl_print (str): String to print upon download completion
-        cloudflare (bool, optional): Boolean flag to indicate whether cloudflare bypass is required. Defaults to False.
+        cloudflare (bool, optional): Boolean flag to indicate whether cloudflare bypass is required.
+                                     Defaults to False.
         headers (dict, optional): Dict of http headers for cloudflare bypass. Defaults to {}.
     """
 
     # if somehow folder hasn't been made yet
     if not os.path.exists(chapter_path):
         os.makedirs(chapter_path)
+
+    # in case url has spaces
+    url = re.sub(r"\s", "", url)
 
     # Use either cloudflare bypass or regular http requests depending on extension requirements
     if cloudflare:

@@ -12,11 +12,11 @@ class Extension(ABC):
     """
 
     @abstractmethod
-    def parse_url(self, query: str) -> ParseResult:
+    def parse_url(self, url: str) -> ParseResult:
         """Checks URL string whether it is a manga or chapter page
 
         Args:
-            query (str): URL string to parse
+            url (str): URL string to parse
 
         Raises:
             NotImplementedError: When method isn't implemented by the subclass
@@ -35,7 +35,9 @@ class Extension(ABC):
         Args:
             query (str): Query string to search for manga
             page (int): Page of search results
-            cover (bool, optional): Boolean flag to indicate whether cover page should be retrieved to models.Manga object. Defaults to False.
+            cover (bool, optional): Boolean flag to indicate whether cover page
+                                    should be retrieved to models.Manga object.
+                                    Defaults to False.
 
         Raises:
             NotImplementedError: When method isn't implemented by the subclass

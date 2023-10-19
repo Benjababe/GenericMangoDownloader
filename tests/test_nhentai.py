@@ -3,7 +3,7 @@ import unittest
 
 import core
 import extensions.nhentai.ext as nhentai
-from models import Chapter, Manga, Tag, SearchResult, ParseResult
+from models import Chapter, Manga, Tag, SearchResult
 
 
 class TestExtension(unittest.TestCase):
@@ -32,15 +32,15 @@ class TestExtension(unittest.TestCase):
         manga = self.get_manga()
 
         # checks all items in 'chapters' key is a models.Chapter object
-        allChapters = all(isinstance(chapter, Chapter) for chapter in manga.chapters)
+        all_chapters = all(isinstance(chapter, Chapter) for chapter in manga.chapters)
 
         # checks all items in 'tags' key is a Tag object
-        allTags = all(isinstance(tag, Tag) for tag in manga.tags)
+        all_tags = all(isinstance(tag, Tag) for tag in manga.tags)
 
-        self.assertTrue(allChapters and allTags)
+        self.assertTrue(all_chapters and all_tags)
 
     def test_download(self):
-        DOWNLOAD_PATH = "./downloads/unittest"
+        download_path = "./downloads/unittest"
 
         # retrieves chapter with all information needed to download
         manga = self.get_manga()
@@ -48,15 +48,15 @@ class TestExtension(unittest.TestCase):
 
         # downloads only 1 page to sample
         page = chapter.page_urls[0]
-        core.download_page(page, DOWNLOAD_PATH, 1)
+        core.download_page(page, download_path, 1)
 
         # gets filesize of page
-        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        size = os.path.getsize(f"{download_path}/1.{page.split('.')[-1]}")
 
         self.assertEqual(size, 394241)
 
-        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
-        os.rmdir(DOWNLOAD_PATH)
+        os.remove(f"{download_path}/1.{page.split('.')[-1]}")
+        os.rmdir(download_path)
 
     def test_get_random(self):
         manga = self.nhentai.get_random()

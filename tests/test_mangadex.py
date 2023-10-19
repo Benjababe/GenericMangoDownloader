@@ -1,7 +1,8 @@
 import json
 import os
-import requests
 import unittest
+import re
+import requests
 
 import core
 import extensions.mangadex.account as account
@@ -15,28 +16,28 @@ class TestExtension(unittest.TestCase):
     def setUp(self) -> None:
         self.mangadex = mangadexExt.Mangadex()
         self.session = core.read_pickle("mangadex", "session")
-        self.API_URL = "https://api.mangadex.org"
+        self.api_url = "https://api.mangadex.org"
         self.manga_id = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         self.chapter_id = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
 
-        if self.session == None:
+        if self.session is None:
             self.session = requests.Session()
 
         return super().setUp()
 
     def test_parse_url(self):
-        MANGA_URL = f"https://mangadex.org/title/{self.manga_id}"
-        CHAPT_URL = f"https://mangadex.org/chapter/{self.chapter_id}"
+        manga_url = f"https://mangadex.org/title/{self.manga_id}"
+        chapt_url = f"https://mangadex.org/chapter/{self.chapter_id}"
 
         # tests manga url parsing
-        res = self.mangadex.parse_url(MANGA_URL)
-        check_type = res.type == ParseResult._MANGA
+        res = self.mangadex.parse_url(manga_url)
+        check_type = res.type == ParseResult.MANGA
         check_item = isinstance(res.item, Manga)
         self.assertTrue(check_type and check_item)
 
         # tests chapter url parsing
-        res = self.mangadex.parse_url(CHAPT_URL)
-        check_type = res.type == ParseResult._CHAPTER
+        res = self.mangadex.parse_url(chapt_url)
+        check_type = res.type == ParseResult.CHAPTER
         check_item = isinstance(res.item, Chapter)
         self.assertTrue(check_type and check_item)
 
@@ -65,15 +66,15 @@ class TestExtension(unittest.TestCase):
         manga = self.mangadex.get_manga_info(manga)
 
         # checks all items in 'chapters' key is a models.Chapter object
-        allChapters = all(isinstance(chapter, Chapter) for chapter in manga.chapters)
+        all_chapters = all(isinstance(chapter, Chapter) for chapter in manga.chapters)
 
         # checks all items in 'tags' key is a Tag object
-        allTags = all(isinstance(tag, Tag) for tag in manga.tags)
+        all_tags = all(isinstance(tag, Tag) for tag in manga.tags)
 
-        self.assertTrue(allChapters and allTags)
+        self.assertTrue(all_chapters and all_tags)
 
     def test_get_chapter(self):
-        chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
+        chapter_list_url = f"{self.api_url}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
         res = self.session.get(chapter_list_url)
         res.close()
 
@@ -88,7 +89,7 @@ class TestExtension(unittest.TestCase):
         self.assertEqual(chapter.title, "The Witches' Tanabata isn't Sweet")
 
     def test_get_scanlator(self):
-        chapter_list_url = f"{self.API_URL}/chapter/{self.chapter_id}"
+        chapter_list_url = f"{self.api_url}/chapter/{self.chapter_id}"
         res = self.session.get(chapter_list_url)
         res.close()
 
@@ -103,26 +104,26 @@ class TestExtension(unittest.TestCase):
         chapter = self.get_chapter()
 
         # ensures all page_urls are valid
-        check = all(core.is_url(url) for url in chapter.page_urls)
+        check = all(core.is_url(re.sub(r"\s", "", url)) for url in chapter.page_urls)
         self.assertTrue(check)
 
     def test_download(self):
-        DOWNLOAD_PATH = "./downloads/unittest"
+        download_path = "./downloads/unittest"
 
         # get chapter with all information needed to download
         chapter = self.get_chapter()
 
         # downloads only 1 page to sample
         page = chapter.page_urls[0]
-        core.download_page(page, DOWNLOAD_PATH, 1)
+        core.download_page(page, download_path, 1)
 
         # gets filesize of page
-        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        size = os.path.getsize(f"{download_path}/1.{page.split('.')[-1]}")
 
         self.assertEqual(size, 290716)
 
-        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
-        os.rmdir(DOWNLOAD_PATH)
+        os.remove(f"{download_path}/1.{page.split('.')[-1]}")
+        os.rmdir(download_path)
 
     def test_get_random(self):
         manga = self.mangadex.get_random()
@@ -131,10 +132,10 @@ class TestExtension(unittest.TestCase):
         self.assertIsNotNone(manga.id)
 
     def test_get_formatted_date(self):
-        DATETIME = "2018-04-11T20:23:32+00:00"
-        date = mangadexExt.format_date(DATETIME)
+        datetime = "2018-04-11T20:23:32+00:00"
+        date = mangadexExt.format_date(datetime)
 
-        self.assertEquals(date, "11/04/2018")
+        self.assertEqual(date, "11/04/2018")
 
     def get_chapter(self) -> Chapter:
         """Helper method for retrieving an attribute-populated models.Chapter object
@@ -143,7 +144,7 @@ class TestExtension(unittest.TestCase):
             Chapter: Populated models.Chapter object
         """
 
-        chapter_list_url = f"{self.API_URL}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
+        chapter_list_url = f"{self.api_url}/chapter/?manga={self.manga_id}&limit=100&translatedLanguage[]=en"
         res = self.session.get(chapter_list_url)
         res.close()
 
@@ -161,41 +162,42 @@ class TestAccount(unittest.TestCase):
         # reads login session for every test in this class
         self.session = core.read_pickle("mangadex", "session")
 
-        if self.session == None:
+        if self.session is None:
             self.session = requests.Session()
 
         return super().setUp()
 
     def test_login(self):
-        USERNAME = "unittestusername"
-        PASSWORD = "password"
+        username = "unittestusername"
+        password = "password"
 
         # self.session's cookies should update after calling login
         assert self.session is not None
-        account.login(self.session, USERNAME, PASSWORD, "")
-        self.assertTrue("Login" in self.session.cookies._cookies[""]["/"])
+        account.login(self.session, username, password, "True")
+        cookies = self.session.cookies.get_dict()
+        self.assertTrue("Login" in cookies and cookies["Login"] == "true")
 
     def test_mark_chapter(self):
         # mark chapter read and unread
         # Umineko Tsubasa Ch. 1
-        MANGA_ID = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
-        CHAPTER_ID = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
-        marked = account.mark_chapter_read(self.session, MANGA_ID, CHAPTER_ID)
-        unmarked = account.mark_chapter_unread(self.session, MANGA_ID, CHAPTER_ID)
+        manga_id = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
+        chapter_id = "1f9b078c-27b2-4abf-8ddd-7e08f835d202"
+        marked = account.mark_chapter_read(self.session, manga_id, chapter_id)
+        unmarked = account.mark_chapter_unread(self.session, manga_id, chapter_id)
 
         self.assertTrue(marked and unmarked)
 
     def test_update_reading_status(self):
         # Umineko Tsubasa
-        MANGA_ID = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
+        manga_id = "fe5b40a2-061e-4f09-8f04-86e26aae5649"
         results = []
 
         # cycle through indexes 0-5
         for index in range(6):
-            res = account.update_reading_status(self.session, MANGA_ID, index)
+            res = account.update_reading_status(self.session, manga_id, index)
             results.append(res)
 
-        self.assertTrue(all(res == True for res in results))
+        self.assertTrue(all(res is True for res in results))
 
 
 if __name__ == "__main__":

@@ -1,14 +1,12 @@
 # standard libraries
+from datetime import datetime
 import json
 from typing import List
 import requests
-from datetime import datetime
 
 # local files
 from models import Chapter, Extension, Manga, Tag, ParseResult
-import extensions.mangadex.account as account
-import extensions.mangadex.search as search
-import extensions.mangadex.parse as parse
+from extensions.mangadex import account, search, parse
 import core
 
 NAME = "mangadex"
@@ -16,6 +14,8 @@ API_URL = "https://api.mangadex.org"
 
 
 class Mangadex(Extension):
+    """Extension for https://mangadex.org"""
+
     def __init__(self):
         super().__init__()
 
@@ -24,12 +24,12 @@ class Mangadex(Extension):
 
         # initialises pickled variables
         self.language = core.read_pickle("mangadex", "language")
-        if self.language == None:
+        if self.language is None:
             self.language = "en"
             core.write_pickle("mangadex", "language", self.language)
 
         self.data_saver = core.read_pickle("mangadex", "data_saver")
-        if self.data_saver == None:
+        if self.data_saver is None:
             self.data_saver = True
             core.write_pickle("mangadex", "data_saver", self.data_saver)
 
@@ -42,11 +42,16 @@ class Mangadex(Extension):
         self.mark_on_dl = stored_mark if stored_mark else False
 
     def parse_url(self, url: str) -> ParseResult:
+        """Parses URL, MangaDex URL should be passed as argument
+
+        Returns:
+            ParseResult: Parsed result of manga or chapter
+        """
         return parse.parse_url(self, url)
 
     def search(self, query: str, page: int, cover: bool = False, prompt_tag=True):
         # if tag search, ask for tags only once and save it locally
-        if prompt_tag and self.tags == None:
+        if prompt_tag and self.tags is None:
             self.tags = search.query_tags(self.session)
 
         return search.search(self, query, page, cover, self.tags)
@@ -67,8 +72,8 @@ class Mangadex(Extension):
 
         for tag in data["attributes"]["tags"]:
             name = tag["attributes"]["name"][self.language]
-            id = tag["id"]
-            manga.tags.append(Tag(name, id))
+            tag_id = tag["id"]
+            manga.tags.append(Tag(name, tag_id))
 
         # retrieves list of chapters for the current manga
         res = self.session.get(
@@ -90,6 +95,11 @@ class Mangadex(Extension):
         return manga
 
     def set_tags(self, tags: List[str]):
+        """Sets to query with
+
+        Args:
+            tags (List[str]): Tags to use in search query
+        """
         self.tags = tags
 
     def get_chapter(self, res_results: dict) -> Chapter:
@@ -104,7 +114,8 @@ class Mangadex(Extension):
 
         # only return page_urls as filenames for now as it takes a GET request for the full URL
         # which would take too much time and probably exceed the API limit if done prior to download
-        # full url will be handled in pre_download, "hash" is also a non-mandatory key for retrieving the full url
+        # full url will be handled in pre_download, "hash" is also a non-mandatory
+        # key for retrieving the full url
         chapter = Chapter(pre_download=True)
 
         chapter.number = res_results["attributes"]["chapter"]
@@ -142,6 +153,7 @@ class Mangadex(Extension):
                     ]
 
                 return self.scanlators[scanlator_id]
+        return ""
 
     # gets the full list of image urls before download
 
@@ -161,7 +173,8 @@ class Mangadex(Extension):
         tmp_data = res.json()
 
         # image url without the filename
-        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/{tmp_data['chapter']['hash']}"
+        base_url = f"{tmp_data['baseUrl']}/{'data-saver' if self.data_saver else 'data'}/\
+            {tmp_data['chapter']['hash']}"
 
         # constructs full image url
         chapter.page_urls = [
@@ -172,7 +185,7 @@ class Mangadex(Extension):
         ]
 
         if self.mark_on_dl and self.session.cookies.get("Login"):
-            account.mark_chapter_read(self.session, chapter.id)
+            account.mark_chapter_read(self.session, chapter.manga_id, chapter.id)
 
         return chapter
 

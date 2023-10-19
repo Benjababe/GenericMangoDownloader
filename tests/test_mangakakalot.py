@@ -3,7 +3,7 @@ import unittest
 
 import core
 import extensions.mangakakalot.ext as mangakakalotExt
-from models import Chapter, Manga, Tag, SearchResult, ParseResult
+from models import Chapter, Manga, Tag, SearchResult
 
 
 # testing methods defined in Mangakakalot class
@@ -33,17 +33,17 @@ class TestExtension(unittest.TestCase):
     def test_get_manga_info(self):
         manga = Manga()
         manga.title = "Umineko no Naku Koro ni Tsubasa"
-        manga.id = "https://mangakakalot.com/manga/umineko_no_naku_koro_ni_tsubasa"
+        manga.id = "https://mangakakalot.com/read-qmcrz2535k1685034552"
 
         manga = self.mangakakalot.get_manga_info(manga)
 
         # checks all items in 'chapters' key is a models.Chapter object
-        allChapters = all(isinstance(item, Chapter) for item in manga.chapters)
+        all_chapters = all(isinstance(item, Chapter) for item in manga.chapters)
 
         # checks all items in 'tags' key is a Tag object
-        allTags = all(isinstance(tag, Tag) for tag in manga.tags)
+        all_tags = all(isinstance(tag, Tag) for tag in manga.tags)
 
-        self.assertTrue(allChapters and allTags)
+        self.assertTrue(all_chapters and all_tags)
 
     def test_pre_download(self):
         # only populating id since it's all we need for predownload
@@ -62,10 +62,10 @@ class TestExtension(unittest.TestCase):
         self.assertTrue(page_check)
 
     def test_download(self):
-        DOWNLOAD_PATH = "./downloads/unittest"
+        download_path = "./downloads/unittest"
 
         manga = Manga()
-        manga.id = "https://mangakakalot.com/manga/umineko_no_naku_koro_ni_tsubasa"
+        manga.id = "https://mangakakalot.com/read-qmcrz2535k1685034552"
         manga = self.mangakakalot.get_manga_info(manga)
 
         # downloads only chapter 1
@@ -76,15 +76,15 @@ class TestExtension(unittest.TestCase):
         page = chapter.page_urls[0]
         cf = chapter.cloudflare
         headers = chapter.headers
-        core.download_page(page, DOWNLOAD_PATH, 1, cloudflare=cf, headers=headers)
+        core.download_page(page, download_path, 1, cloudflare=cf, headers=headers)
 
         # gets filesize of page
-        size = os.path.getsize(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
+        size = os.path.getsize(f"{download_path}/1.{page.split('.')[-1]}")
 
         self.assertEqual(size, 130200)
 
-        os.remove(f"{DOWNLOAD_PATH}/1.{page.split('.')[-1]}")
-        os.rmdir(DOWNLOAD_PATH)
+        os.remove(f"{download_path}/1.{page.split('.')[-1]}")
+        os.rmdir(download_path)
 
 
 if __name__ == "__main__":

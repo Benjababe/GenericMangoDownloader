@@ -20,7 +20,7 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
     # if no available chapters, exit
     if len(manga_info.chapters) == 0:
         print("There are no chapters for this manga in english")
-        return
+        return None
 
     # if only 1 available chapter, no need to process
     if len(manga_info.chapters) == 1:
@@ -31,7 +31,8 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
 
     for chapter in manga_info.chapters:
         scanlator = f"[{chapter.scanlator}] " if chapter.scanlator else ""
-        foldername = f"{scanlator}Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
+        foldername = f"{scanlator}Ch.{chapter.number}{'' if chapter.title == '' else ' - '}\
+                        {chapter.title}"
 
         chapter_float = round(float(chapter.number), 3)
         chapter.foldername = foldername
@@ -49,12 +50,10 @@ def get_manga_info(ext_active: Extension, manga: Manga) -> List[Chapter]:
         to_download = input(query_str).lower().strip() or "q"
 
         if to_download == "q":
-            return
+            return None
 
         # keeps asking for chapters until a valid input is given
-        if is_valid_download_range(to_download):
-            break
-        else:
+        if not is_valid_download_range(to_download):
             print("Error with input, please try again.")
 
     to_download = parse_to_download(to_download, valid_chapters)
@@ -73,7 +72,8 @@ def parse_to_download(to_download: str, valid_chapters: List[Chapter]) -> List[C
         valid_chapters (List[Chapter]): List of models.Chapter objects
 
     Returns:
-        List[Chapter]: List of models.Chapter objects with chapter numbers in range of 'to_download' parameter
+        List[Chapter]: List of models.Chapter objects with chapter numbers
+                       in range of 'to_download' parameter
     """
 
     new_to_download = []

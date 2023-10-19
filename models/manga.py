@@ -19,6 +19,12 @@ class Manga:
         self.chapters: List[Chapter] = []
 
     def add_attribute(self, name: str, value: str):
+        """Adds attribute tag to Manga object
+
+        Args:
+            name (str): Attribute name
+            value (str): Attribute value
+        """
         setattr(self, name, value)
 
 
@@ -32,7 +38,8 @@ class Chapter:
         """Constructor for Chapter class
 
         Args:
-            pre_download (bool): Boolean flag indicate segment of code should be run before downloading
+            pre_download (bool): Boolean flag indicate segment of code
+                                should be run before downloading
         """
 
         self.pre_download = pre_download
@@ -41,6 +48,7 @@ class Chapter:
         self.title: str = ""
         self.scanlator: str = ""
         self.date: str = ""
+        self.manga_id: str = ""
         self.manga_title: str = ""
         self.foldername: str = ""
         self.page_urls: List[str] = []
@@ -50,7 +58,8 @@ class Chapter:
         self.cloudflare = False
 
     def add_attribute(self, name: str, value: str):
-        """Allow for additional attributes to be added to models.Chapter object upon extension's needs
+        """Allow for additional attributes to be added to models.
+            Chapter object upon extension's needs
 
         Args:
             name (str): Name of new attribute
@@ -62,7 +71,7 @@ class Chapter:
 class Tag:
     """This is the basic Tag class for manga tags, could be used for a GUI in the future"""
 
-    def __init__(self, name: str, id: str):
+    def __init__(self, name: str, tag_id: str):
         """Constructor for Tag class
 
         Args:
@@ -71,4 +80,4 @@ class Tag:
         """
 
         self.name = name
-        self.id = id
+        self.id = tag_id

@@ -3,6 +3,8 @@ import json
 from models import Manga, Chapter, ParseResult
 
 API_URL = "https://api.mangadex.org"
+MANGA_TEMPLATE = "https://mangadex.org/title/"
+CHAPTER_TEMPLATE = "https://mangadex.org/chapter/"
 
 
 def parse_url(self, url: str) -> ParseResult:
@@ -14,8 +16,6 @@ def parse_url(self, url: str) -> ParseResult:
     Returns:
         ParseResult: ParseResult object containing information on parsed webpage
     """
-    MANGA_TEMPLATE = "https://mangadex.org/title/"
-    CHAPTER_TEMPLATE = "https://mangadex.org/chapter/"
 
     if MANGA_TEMPLATE in url and url.index(MANGA_TEMPLATE) == 0:
         manga_id = url.replace(MANGA_TEMPLATE, "")
@@ -24,9 +24,11 @@ def parse_url(self, url: str) -> ParseResult:
             manga_id = manga_id[:-1]
         return parse_url_manga(self, manga_id)
 
-    elif CHAPTER_TEMPLATE in url and url.index(CHAPTER_TEMPLATE) == 0:
+    if CHAPTER_TEMPLATE in url and url.index(CHAPTER_TEMPLATE) == 0:
         chapter_id = url.replace(CHAPTER_TEMPLATE, "").split("/")[0]
         return parse_url_chapter(self, chapter_id)
+
+    return None
 
 
 def parse_url_manga(self, manga_id: str) -> ParseResult:
@@ -49,7 +51,7 @@ def parse_url_manga(self, manga_id: str) -> ParseResult:
     manga.title = data["data"]["attributes"]["title"][self.language]
     manga.id = manga_id
 
-    return ParseResult(ParseResult._MANGA, manga)
+    return ParseResult(ParseResult.MANGA, manga)
 
 
 def parse_url_chapter(self, chapter_id: str) -> ParseResult:
@@ -85,6 +87,7 @@ def parse_url_chapter(self, chapter_id: str) -> ParseResult:
             data = res.json()["data"]
 
             chapter.manga_title = data["attributes"]["title"][chapter_lang]
-            chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}{'' if chapter.title == '' else ' - '}{chapter.title}"
+            chapter.foldername = f"[{chapter.scanlator}] Ch.{chapter.number}\
+                {'' if chapter.title == '' else ' - '}{chapter.title}"
 
-    return ParseResult(ParseResult._CHAPTER, chapter)
+    return ParseResult(ParseResult.CHAPTER, chapter)

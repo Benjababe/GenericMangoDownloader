@@ -1,8 +1,7 @@
 from datetime import datetime
 import json
 import requests
-
-import core
+from core.misc import read_pickle, write_pickle
 
 API_URL = "https://api.mangadex.org"
 
@@ -43,7 +42,7 @@ def login(
     if data["result"] == "ok":
         update_login_session(session, data)
         print("Successfully logged in as", username)
-        mark_on_dl_store = False
+        mark_on_dl_store = mark_on_dl
 
         if mark_on_dl == "":
             mark_on_dl = input(
@@ -58,7 +57,7 @@ def login(
                 print("Invalid input, defaulting to no")
                 mark_on_dl_store = False
 
-        core.write_pickle("mangadex", "mark_on_dl", str(mark_on_dl_store))
+        write_pickle("mangadex", "mark_on_dl", str(mark_on_dl_store))
 
 
 def check_login_session(session: requests.Session):
@@ -101,14 +100,14 @@ def update_login_session(session: requests.Session, data: dict):
     session.headers.update({"Authorization": f"Bearer {data['token']['session']}"})
 
     # saving current session into a pickle
-    core.write_pickle("mangadex", "session", session)
+    write_pickle("mangadex", "session", session)
 
 
 def toggle_data_saver():
     """Toggles data setting for MangaDex"""
-    data_saver = core.read_pickle("mangadex", "data_saver")
+    data_saver = read_pickle("mangadex", "data_saver")
     data_saver = not data_saver
-    core.write_pickle("mangadex", "data_saver", data_saver)
+    write_pickle("mangadex", "data_saver", data_saver)
 
     print(f"Data saver set to: {data_saver}")
 
@@ -120,7 +119,7 @@ def set_language(language: str):
         language (str): Language code to set to
     """
 
-    core.write_pickle("mangadex", "language", language)
+    write_pickle("mangadex", "language", language)
     print(f"Language set to: {language}")
 
 

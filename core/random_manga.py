@@ -20,9 +20,9 @@ def random_manga(ext_active: Extension) -> Manga:
         dl = input(query) or "Y"
 
         if dl.upper() == "N":
-            return
+            return None
 
-        elif dl.upper() == "Y":
+        if dl.upper() == "Y":
             break
 
     return manga

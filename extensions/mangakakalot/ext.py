@@ -1,10 +1,10 @@
 # standard libraries
 from typing import List
-import bs4
+from urllib.parse import urlparse
 import re
 import requests
+import bs4
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
 
 # local files
 from models import Chapter, Extension, Manga, Tag, ParseResult, SearchResult
@@ -13,14 +13,21 @@ NAME = "mangakakalot"
 
 
 class Mangakakalot(Extension):
+    """Extension for https://mangakakalot.com and https://chapmanganato.com"""
+
     session = requests.Session()
 
-    def parse_url(self, query: str) -> ParseResult:
-        return super().parse_url(query)
+    def parse_url(self, url: str) -> ParseResult:
+        """Parses URL, Mangakakalot URL should be passed as argument
+
+        Returns:
+            ParseResult: Parsed result of manga or chapter
+        """
+        print("Mangakakalot parse_url")
 
     # search_len is unapplicable here
     def search(self, query: str, page: int, cover: bool = False):
-        # mangakakalot replaces spaces with underscores
+        # Mangakakalot replaces spaces with underscores
         query = query.replace(" ", "_")
 
         search_url = f"https://mangakakalot.com/search/story/{query}?page={page}"
@@ -32,7 +39,7 @@ class Mangakakalot(Extension):
         paging_elem = soup.find("a", "page_last")
 
         # if paging cannot be found, there's only 1 page of search results
-        if paging_elem == None:
+        if paging_elem is None:
             last_page = True
         else:
             paging_string = paging_elem.string.strip()
@@ -69,11 +76,13 @@ class Mangakakalot(Extension):
         if re.fullmatch(r"https:\/\/mangakakalot\.com\/[\w\/-]+", res.url):
             manga = self.get_manga_info_mangakakalot(soup, manga)
         elif re.fullmatch(r"https:\/\/chapmanganato\.com\/[\w\/-]+", res.url):
-            manga = self.get_manga_info_chapmanganato(soup, manga)
+            manga = self.get_manga_info_manganato(soup, manga)
 
         return manga
 
     def get_manga_info_mangakakalot(self, soup: BeautifulSoup, manga: Manga):
+        """Dedicated manga info retrieval for Mangakakalot"""
+
         description = soup.find("div", {"id": "noidungm"})
         description = description.contents[2].strip()
 
@@ -104,7 +113,9 @@ class Mangakakalot(Extension):
 
         return manga
 
-    def get_manga_info_chapmanganato(self, soup: BeautifulSoup, manga: Manga):
+    def get_manga_info_manganato(self, soup: BeautifulSoup, manga: Manga):
+        """Dedicated manga info retrieval for Manganato"""
+
         description = soup.find("div", {"id": "panel-story-info-description"})
         description = description.contents[2].strip()
 
@@ -258,7 +269,8 @@ def generate_headers(chapter: Chapter) -> dict:
         "sec-fetch-mode": "no-cors",
         "sec-fetch-site": "cross-site",
         "sec-gpc": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) \
+                        Chrome/110.0.0.0 Safari/537.36",
     }
 
     return cf_headers
